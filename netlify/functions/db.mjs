@@ -48,12 +48,27 @@ async function translate(texts, tl) {
     if (!r.ok) throw new Error(j?.error?.message || "translate " + r.status);
     return j.data.translations.map((x) => ({ t: x.translatedText, src: x.detectedSourceLanguage || "" }));
   }
-  const out = new Array(texts.length);
-  let next = 0;
-  await Promise.all(Array.from({ length: 6 }, async () => {
-    while (next < texts.length) { const i = next++; try { out[i] = await gtx(texts[i], tl); } catch { out[i] = null; } }
-  }));
+  const pool = async (fn) => {
+    const out = new Array(texts.length);
+    let next = 0;
+    await Promise.all(Array.from({ length: 6 }, async () => {
+      while (next < texts.length) { const i = next++; try { out[i] = await fn(texts[i], tl); } catch { out[i] = null; } }
+    }));
+    return out;
+  };
+  let out = await pool(gtx);
+  if (!out.some(Boolean)) out = await pool(myMemory); // Google often refuses requests coming from cloud servers
   return out;
+}
+const guessLang = (t) => { const ko = (t.match(/[가-힣]/g) || []).length, vi = (t.match(/[À-ỹđĐ]/g) || []).length; return ko > vi ? "ko" : vi ? "vi" : "en"; };
+async function myMemory(text, tl) {
+  const src = guessLang(text);
+  if (src === tl) return { t: text, src };
+  const r = await fetch("https://api.mymemory.translated.net/get?q=" + encodeURIComponent(text.slice(0, 480)) + "&langpair=" + src + "|" + tl + (env("MYMEMORY_EMAIL") ? "&de=" + encodeURIComponent(env("MYMEMORY_EMAIL")) : ""));
+  const j = await r.json();
+  const t = j && j.responseData && j.responseData.translatedText;
+  if (!t || Number(j.responseStatus) !== 200 || /MYMEMORY WARNING/i.test(t)) throw new Error("mymemory");
+  return { t, src };
 }
 
 async function readState(store) {

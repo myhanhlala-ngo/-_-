@@ -155,6 +155,7 @@ section.card .sc{border:1.5px solid var(--cb);border-radius:4px}
 <input type="file" id="fRestore" accept=".json,.html,.htm" hidden="">
 <script>
 /* Captured before anything is rendered: used to rebuild a self-contained HTML copy with data */
+const APP_VERSION="2026.10.30-tr2";
 const SOURCE = "<!doctype html>\n" + document.documentElement.outerHTML;
 const $ = i => document.getElementById(i);
 
@@ -247,17 +248,29 @@ function trCollect(){const out=new Set(),add=v=>{if(needsTr(v)){const e=S.tr[v];
   else{const D=day();Object.keys(TRF).forEach(s=>{if(s!=="k")(D[s]||[]).forEach(r=>TRF[s].forEach(k=>add(r[k])))});TRTOP.forEach(k=>add(D[k]));
     dates().forEach(d=>(S.days[d].e||[]).forEach(x=>add(String(x.cause||"").replace(/\s*\(×\d+\)/,"").trim().toUpperCase())))}
   return[...out].filter(v=>!TRX.pend.has(v))}
+/* translation engines, tried in order: Google (from this browser) → our server (/api/db/tr) → MyMemory */
+const guessLang=t=>{const ko=(t.match(/[가-힣]/g)||[]).length,vi=(t.match(/[À-ỹđĐ]/g)||[]).length;return ko>vi?"ko":vi?"vi":"en"};
+const TRE={ok:null,last:""};
+async function trGoogle(t,tl){const r=await fetch("https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=auto&tl="+tl+"&q="+encodeURIComponent(t));if(!r.ok)throw new Error("google "+r.status);const j=await r.json();
+  const out=(j[0]||[]).map(x=>x[0]).join("");if(!out)throw new Error("google empty");return{t:out,src:j[2]||""}}
+async function trMyMemory(t,tl){const src=guessLang(t);if(src===tl)return{t,src};
+  const r=await fetch("https://api.mymemory.translated.net/get?q="+encodeURIComponent(t.slice(0,480))+"&langpair="+src+"|"+tl);if(!r.ok)throw new Error("mymemory "+r.status);const j=await r.json();
+  const out=j&&j.responseData&&j.responseData.translatedText;if(!out||+j.responseStatus!==200||/MYMEMORY WARNING|QUERY LENGTH LIMIT/i.test(out))throw new Error("mymemory "+(j.responseStatus||"")+" "+String(out||j.responseDetails||"").slice(0,60));return{t:out,src}}
+async function trPool(texts,fn){const out=new Array(texts.length);out[0]=await fn(texts[0]);let nx=1,fails=0;
+  await Promise.all(Array.from({length:6},async()=>{while(nx<texts.length){const i=nx++;try{out[i]=await fn(texts[i])}catch(e){out[i]=null;fails++}}}));return out}
 async function trFetch(texts,tl){
-  if(typeof SV!=="undefined"&&SV.on){const r=await svFetch("/api/db/tr",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({texts,tl})},false);const j=await r.json();if(!j.ok)throw new Error(j.error||"tr");return j.out}
-  const one=async t=>{const r=await fetch("https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=auto&tl="+tl+"&q="+encodeURIComponent(t));const j=await r.json();return{t:(j[0]||[]).map(x=>x[0]).join(""),src:j[2]||""}};
-  const out=new Array(texts.length);try{out[0]=await one(texts[0])}catch(e){return null}
-  let nx=1;await Promise.all(Array.from({length:6},async()=>{while(nx<texts.length){const i=nx++;try{out[i]=await one(texts[i])}catch(e){out[i]=null}}}));return out}
+  const errs=[];
+  try{return await trPool(texts,t=>trGoogle(t,tl))}catch(e){errs.push(String(e.message||e))}
+  if(typeof SV!=="undefined"&&SV.on){try{const r=await svFetch("/api/db/tr",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({texts,tl})},false);const j=await r.json();
+      if(j.ok&&j.out&&j.out.some(Boolean))return j.out;errs.push("server "+(j.error||"no result"))}catch(e){errs.push("server "+(e.message||e))}}
+  try{return await trPool(texts,t=>trMyMemory(t,tl))}catch(e){errs.push(String(e.message||e))}
+  TRE.last=errs.join(" · ");console.warn("translation failed:",TRE.last);return null}
 function trSchedule(){clearTimeout(TRX.t);TRX.t=setTimeout(trRun,250)}
 async function trRun(){
   if(!S)return;if(TRX.busy){TRX.again=true;return}const tl=lang,list=trCollect();if(!list.length){trApplyDom();return}
   TRX.busy=true;list.forEach(v=>TRX.pend.add(v));trStatus(list.length);let got=0;
   try{for(let i=0;i<list.length;i+=40){const part=list.slice(i,i+40);let res=null;try{res=await trFetch(part,tl)}catch(e){res=null}
-      if(!res){TRX.fail++;if(!TRX.warned){TRX.warned=true;toast(T("trFail"),"err")}break}
+      if(!res){TRX.fail++;if(!TRX.warned){TRX.warned=true;toast(T("trFail")+(TRE.last?"\n("+TRE.last+")":""),"err");setTimeout(()=>TRX.warned=false,60000)}break}
       part.forEach((v,j)=>{const x=res[j];if(!x||x.t==null)return;const e=S.tr[v]=S.tr[v]||{};const src=String(x.src||"").slice(0,2);if(src&&!e.src)e.src=src;e[tl]=src===tl?v:x.t;got++});
       trStatus(Math.max(0,list.length-i-40))}}
   finally{list.forEach(v=>TRX.pend.delete(v));TRX.busy=false;trStatus(0)}
@@ -419,7 +432,7 @@ function head(){
   $("panel").className="panel"+(set.collapsed?" hidden":"");
   $("panel").innerHTML=`
     <div class="prow">${tb("newDay","plus","bNewDay","green")}${tb("delDay","trash","bDelDay","red")}<span class="divider"></span>${tb("newMonth","calPlus","bNewMonth","green")}${tb("delMonth","calX","bDelMonth","red")}</div>
-    <div class="prow">${tb("upload","upload","bUpload","navyf")}${tb("orig","sheet","bOrig","greenf")}${tb("pdf","pdf","bPdf")}${tb("backup","save","bBackup")}${tb("restore","restore","bRestore")}${tb("history","clock","bHistory")}${tb("excel","xls","bExcel")}${tb("html","down","bHtml")}${tb("auto","autosave",ak,autoHtml.on?(autoHtml.paused?"warn":"on"):"")}${tb("print","print","bPrint")}</div>`;
+    <div class="prow">${tb("upload","upload","bUpload","navyf")}${tb("orig","sheet","bOrig","greenf")}${tb("pdf","pdf","bPdf")}${tb("backup","save","bBackup")}${tb("restore","restore","bRestore")}${tb("history","clock","bHistory")}${tb("excel","xls","bExcel")}${tb("html","down","bHtml")}${tb("auto","autosave",ak,autoHtml.on?(autoHtml.paused?"warn":"on"):"")}${tb("print","print","bPrint")}<span class="sp"></span><span style="align-self:flex-end;font-size:10px;color:var(--muted)">v${APP_VERSION}</span></div>`;
   document.documentElement.lang=lang; document.body.classList.toggle("report",!!set.view);
   updateSaved();
 }
