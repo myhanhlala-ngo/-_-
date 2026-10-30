@@ -1,0 +1,1097 @@
+<!doctype html>
+<html lang="vi"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>조립팀 일일 업무 보고</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<script id="embedded-data" type="application/json">null</script>
+<style>
+:root{--navy:#172B3A;--navy2:#2E4657;--mint:#E9F5F3;--line:#C9D6DC;--ink:#1F2933;--muted:#6B7C88;--bg:#F3F6F7;--ok:#1E7F5C;--bad:#C0392B;--card:#fff;--y:#FFF5DE;--g:#EEF2F4;--focus:#E0A800;
+  --gT:#EAF6EE;--gL:#BFE3CB;--gI:#1E7F3C;--gS:#23934A;--rT:#FDEEEE;--rL:#F3C2C2;--rI:#C0392B;--wT:#FFF8E6;--wL:#EBCB7A;--wI:#8A6100;--h2:#172B3A;--cb:#172B3A;--cbs:rgba(23,43,58,.14)}
+@media(prefers-color-scheme:dark){:root{--ink:#E6EDF1;--bg:#12191F;--card:#1B252D;--line:#33444F;--mint:#22343A;--muted:#9AABB5;--y:#3A3420;--g:#27333B;--h2:#9FD3C7;
+  --gT:#183126;--gL:#2D5B41;--gI:#7FD6A0;--rT:#3A1F1F;--rL:#6B3434;--rI:#F19A9A;--wT:#3A3220;--wL:#7A6330;--wI:#F0CC7A;--cb:#5F95B0;--cbs:rgba(0,0,0,.45)}}
+*{box-sizing:border-box}
+body{margin:0;font:13px/1.45 "Noto Sans KR","Malgun Gothic",Arial,sans-serif;background:var(--bg);color:var(--ink)}
+svg.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+button,select,input,textarea{font:inherit;color:var(--ink);border:1px solid var(--line);border-radius:5px;background:var(--card);padding:4px 7px}
+button{cursor:pointer}
+
+/* ---------- header ---------- */
+header{position:sticky;top:0;z-index:20;background:var(--navy);color:#fff;padding:12px 20px 10px}
+.hrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.hrow+.hrow{margin-top:8px}
+.sp{flex:1}
+header h1{margin:0 12px 0 0;font-size:19px;font-weight:700}
+header button,header select{background:var(--navy2);color:#fff;border-color:#47677c}
+header button.on{background:var(--focus);color:#000;border-color:var(--focus);font-weight:700}
+header button:disabled{opacity:.35;cursor:default}
+header label.nl{font-size:11px;font-weight:700;letter-spacing:.04em;opacity:.7;text-transform:uppercase}
+header select{min-width:120px}
+.chip{font-size:11px;border-radius:10px;padding:2px 9px;background:#2E4657;color:#cfe0e8;border:1px solid #47677c}
+button.chip{display:inline-flex;gap:4px;align-items:center}
+.saved{font-size:12px;color:#cfe0e8;white-space:nowrap}.saved b{color:#8FE0B4;font-weight:500}
+.gb{display:inline-flex;gap:8px;align-items:center;padding:5px 12px;border-radius:6px}
+.gb .tx{display:flex;flex-direction:column;line-height:1.15;text-align:left}.gb .m{font-weight:700}.gb .s{font-size:10px;opacity:.75}
+.lang{display:flex;align-items:center;gap:6px;border:1px solid #47677c;border-radius:8px;padding:3px 8px;background:#10202b}.lang b{font-size:10px;letter-spacing:1px;opacity:.8}
+.lang button.fl{width:34px;height:24px;padding:0;border:2px solid transparent;overflow:hidden;background:none;border-radius:4px;opacity:.6}
+.lang button.fl.on{border-color:#fff;opacity:1}.lang svg{display:block;width:100%;height:100%}
+
+/* ---------- tool panel ---------- */
+.panel{background:var(--card);border-bottom:1px solid var(--line);padding:10px 20px 12px;display:flex;flex-direction:column;gap:8px}
+.panel.hidden{display:none}
+.prow{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
+.divider{width:1px;background:var(--line);margin:0 6px}
+.tb{display:inline-flex;align-items:center;gap:10px;padding:7px 14px 7px 12px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--ink);text-align:left;min-height:44px}
+.tb .tx{display:flex;flex-direction:column;line-height:1.2}.tb .m{font-weight:700;font-size:13px}.tb .s{font-size:10.5px;color:var(--muted);margin-top:2px}
+.tb:hover{filter:brightness(.97)}
+.tb.green{background:var(--gT);border-color:var(--gL);color:var(--gI)}.tb.red{background:var(--rT);border-color:var(--rL);color:var(--rI)}
+.tb.green .s,.tb.red .s,.tb.navyf .s,.tb.greenf .s,.tb.on .s,.tb.warn .s{color:inherit;opacity:.75}
+.tb.navyf{background:var(--navy);border-color:var(--navy);color:#fff}.tb.greenf{background:var(--gS);border-color:var(--gS);color:#fff}
+.tb.on{background:var(--gT);border-color:var(--gS);color:var(--gI);box-shadow:inset 0 0 0 1px var(--gS)}
+.tb.warn{background:var(--wT);border-color:var(--wL);color:var(--wI)}
+
+/* ---------- report body (card layout) ---------- */
+main{max-width:1560px;margin:0 auto;padding:16px 24px 40px}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-bottom:14px}
+.meta label{font-size:11px;color:var(--muted);display:block}.meta input,.meta select{width:100%;background:var(--y)}
+section.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:16px}
+h2{margin:0 0 8px;font-size:15px;color:var(--h2);display:flex;align-items:baseline;flex-wrap:wrap;gap:0}
+h2 .no{background:var(--navy);color:#fff;border-radius:4px;padding:1px 7px;margin-right:8px;font-size:12px}
+h2 .sub{font-weight:400;color:var(--muted);margin-left:10px;font-size:12px}
+h2 .hsp{flex:1}h2 button.imp{font-size:12px;font-weight:700;background:var(--navy);color:#fff;border-color:var(--navy);display:inline-flex;gap:6px;align-items:center;padding:4px 10px;align-self:center}
+body.report h2 button.imp{display:none}@media print{h2 button.imp{display:none}}
+.sp-tbl{width:100%;border-collapse:collapse;min-width:0;font-size:12px}.sp-tbl th{padding:4px 6px}.sp-tbl td{padding:0}.sp-tbl td.g{padding:4px 6px}
+.sp-tbl input{width:100%;border:0;background:var(--y);padding:5px 6px;min-width:0}.sp-tbl input.n{text-align:right}.sp-tbl td.c input{text-align:center}
+.prog-toast{min-width:260px}.prog-toast .pb{height:5px;background:rgba(255,255,255,.25);border-radius:3px;margin-top:6px}.prog-toast .pb i{display:block;height:100%;width:0;background:#8FE0B4;border-radius:3px;transition:width .2s}
+.sc{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:800px}
+th,td{border:1px solid var(--line);padding:2px;vertical-align:top}
+th{background:var(--navy);color:#fff;font-weight:500;padding:5px 6px;white-space:nowrap}
+td.y{background:var(--y)}
+td.g{background:var(--g);padding:6px 8px;text-align:right;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+td.g.c{text-align:center}
+td.g.neg{background:#FBD3D6;color:#B3261E}@media(prefers-color-scheme:dark){td.g.neg{background:#4A2328;color:#F5A3A3}}
+tr.t td.neg{background:#FBD3D6!important;color:#B3261E}
+td.dup input{color:var(--muted)}body.report td.dup input{color:transparent}body.report td.dup{border-top-color:transparent}
+body.report main input.dash::placeholder{color:var(--ink)}
+@media print{td.dup input{color:transparent}td.dup{border-top-color:transparent}main input.dash::placeholder{color:#1F2933}}
+td input,td select,td textarea{width:100%;border:0;background:transparent;border-radius:0;min-width:60px}
+td textarea{min-width:180px;min-height:30px;resize:none;display:block;overflow:hidden;line-height:1.4}
+[data-s="s"][data-k="item"],[data-s="s"][data-k="name"]{text-align:center}
+td input.n{text-align:right;font-variant-numeric:tabular-nums}td input.tm{text-align:center;font-variant-numeric:tabular-nums}
+td input:focus,td select:focus,td textarea:focus,.meta input:focus,.meta select:focus{outline:2px solid var(--focus);background:var(--card)}
+tr.t td{background:var(--mint);font-weight:700;padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums}tr.t td:first-child{text-align:left}tr.t td.x{background:transparent}
+th.x,td.x{width:30px;min-width:30px;text-align:center;background:transparent;border:0;padding:0 0 0 4px}
+td.x button{color:var(--bad);padding:1px 6px;opacity:.35}tr:hover td.x button,td.x button:focus{opacity:1}
+button.add{margin-top:8px;background:var(--mint)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.two label{font-weight:700}.two textarea{width:100%;min-height:110px;background:var(--y);resize:vertical}
+.ok{color:var(--ok)!important}.bad{color:var(--bad)!important}
+.top td{padding:5px 8px}.bg{height:8px;background:var(--line);border-radius:4px;min-width:80px;margin-top:5px}.bg i{display:block;height:100%;border-radius:4px;background:var(--ok)}
+.prog{position:relative}.prog .bar{position:absolute;left:0;bottom:0;height:3px;background:var(--navy);opacity:.55}
+select.st-계획{color:#455A69;font-weight:700}select.st-진행중{color:#1F5FA8;font-weight:700}select.st-지연{color:#B23A2E;font-weight:700}select.st-완료{color:#1E7F5C;font-weight:700}select.st-보류{color:#888;font-weight:700}
+@media(max-width:700px){.two{grid-template-columns:1fr}main{padding:12px 16px 32px}header{padding:10px 16px}.panel{padding:10px 16px}}
+
+/* ---------- modal / toast ---------- */
+.mask{position:fixed;inset:0;background:rgba(15,28,38,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal{background:var(--card);color:var(--ink);border-radius:10px;width:min(460px,100%);max-height:90vh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.modal.wide{width:min(980px,100%)}
+.mh{background:var(--navy);color:#fff;padding:12px 16px;border-radius:10px 10px 0 0;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.mh .x{background:transparent;border:0;color:#fff;font-size:18px}
+.mb{padding:16px;overflow:auto}.mf{padding:12px 16px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
+.mbtn{padding:7px 16px;border-radius:6px}.mbtn.pri{background:var(--navy);border-color:var(--navy);color:#fff;font-weight:700}.mbtn.dan{background:var(--rI);border-color:var(--rI);color:#fff;font-weight:700}.mbtn.sm{padding:4px 10px;font-size:12px}
+.fld{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}.fld>span{font-size:12px;font-weight:700;color:var(--h2)}
+.radio{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:6px;margin-bottom:6px;cursor:pointer}
+.note{font-size:12px;color:var(--muted);margin-top:8px}
+.list{border:1px solid var(--line);border-radius:6px}.li{display:flex;gap:10px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line)}.li:last-child{border-bottom:0}
+.li .grow{flex:1;min-width:0}.li .t{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.li .d{font-size:11px;color:var(--muted)}.li.sel{background:var(--mint)}
+.empty{padding:24px;text-align:center;color:var(--muted)}
+.pdfwrap{display:grid;grid-template-columns:300px 1fr;gap:12px;min-height:60vh}.pdfwrap iframe{width:100%;height:100%;min-height:60vh;border:1px solid var(--line);border-radius:6px;background:var(--g)}
+.pv{width:100%;border-collapse:collapse;font-size:12px;min-width:0}.pv td,.pv th{padding:4px 6px}
+.toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:60}
+.toast{background:var(--navy);color:#fff;padding:10px 14px;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.2);max-width:440px;font-size:13px;white-space:pre-line}
+.toast.t-err{background:var(--rI)}.toast.t-ok{background:var(--gS)}
+@media(max-width:700px){.pdfwrap{grid-template-columns:1fr}}
+
+/* ---------- report view & print ---------- */
+body.report main td.y,body.report .meta input,body.report .meta select,body.report .two textarea{background:var(--card)}
+body.report main input,body.report main select,body.report main textarea{pointer-events:none;-webkit-appearance:none;appearance:none;resize:none}
+body.report main input::placeholder{color:transparent}
+body.report main input[type=date][value=""]{color:transparent}
+body.report main input[type=date]::-webkit-calendar-picker-indicator{display:none}
+body.report .x,body.report button.add,body.report .panel{display:none!important}
+body.report main tr:nth-child(odd) td.y{background:color-mix(in srgb,var(--g) 45%,var(--card))}
+@media print{
+  header,.panel,.toasts,button.add,.x{display:none!important}
+  body{background:#fff}main{max-width:none;padding:0}section.card{break-inside:avoid;border-color:#ccc}
+  main td.y,.meta input,.meta select,.two textarea{background:#fff!important}
+  main input,main select,main textarea{-webkit-appearance:none;appearance:none;resize:none}
+  main input::placeholder{color:transparent}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{size:A4 landscape;margin:8mm}
+}
+
+/* ---------- multi-cell select / copy / paste ---------- */
+td.csel{box-shadow:inset 0 0 0 9999px rgba(30,127,92,.22);outline:1px solid var(--gS);outline-offset:-1px}
+body.selecting{-webkit-user-select:none;user-select:none;cursor:cell}
+body.selecting td input,body.selecting td textarea,body.selecting td select{pointer-events:none}
+section[data-sec] th:not(.x){cursor:cell}
+@media print{td.csel{box-shadow:none;outline:none}}
+
+/* ---------- bold framed KPI cards ---------- */
+section.card{border:2px solid var(--cb);border-top:5px solid var(--cb);border-radius:10px;box-shadow:0 3px 10px var(--cbs);padding:12px 16px 14px}
+section.card>h2{padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid var(--line)}
+section.card .sc{border:1.5px solid var(--cb);border-radius:4px}
+@media print{section.card{border:2px solid #172B3A;border-top:5px solid #172B3A;box-shadow:none}section.card .sc{border-color:#172B3A}}
+</style>
+</head>
+<body>
+<header id="hd"></header>
+<div id="panel"></div>
+<main id="app"></main>
+<div class="toasts" id="toasts"></div>
+<input type="file" id="fUp" accept=".xlsx,.xls,.xlsm,.csv,image/*" multiple="" hidden="">
+<input type="file" id="fShip" accept=".xlsx,.xls,.xlsm,.csv,image/*" multiple="" hidden="">
+<input type="file" id="fPdf" accept="application/pdf,.pdf" multiple="" hidden="">
+<input type="file" id="fRestore" accept=".json,.html,.htm" hidden="">
+<script>
+/* Captured before anything is rendered: used to rebuild a self-contained HTML copy with data */
+const SOURCE = "<!doctype html>\n" + document.documentElement.outerHTML;
+const $ = i => document.getElementById(i);
+
+/* =====================================================================
+   1. TEXT  [ko, vi, en]
+   ===================================================================== */
+const W={title:["조립팀 일일 업무 보고","Báo cáo công việc hằng ngày – Bộ phận Lắp ráp","Assembly Team Daily Report"],tabR:["일일보고","Báo cáo ngày","Daily report"],tabK:["개선과제","Đề tài cải tiến","Improvement tasks"],
+date:["보고일자","Ngày báo cáo","Report date"],writer:["작성자","Người lập","Prepared by"],checker:["확인자","Người duyệt","Checked by"],basis:["보고기준","Cơ sở báo cáo","Basis"],b0:["전일 실적","Kết quả hôm trước","Previous day"],b1:["당일 계획","Kế hoạch trong ngày","Same-day plan"],
+addRow:["+ 행 추가","+ Thêm dòng","+ Add row"],delRow:["행 삭제","Xóa dòng","Delete row"],
+s1:["생산 운영 현황","Tình hình vận hành sản xuất","Production status"],s2:["검사 품질","Chất lượng kiểm tra","Inspection quality"],s3:["설비 정지 시간","Thời gian dừng thiết bị","Equipment downtime"],s4:["출하 현황","Xuất hàng","Shipping"],s5:["신모델 준비","Chuẩn bị model mới","New model readiness"],s6:["WORST 불량 TOP 3","Lỗi WORST TOP 3","WORST defects TOP 3"],s7:["특이사항 (지원 요청 및 의사결정)","Đặc biệt (hỗ trợ & quyết định)","Notes (support & decisions)"],sk:["개선과제 관리","Quản lý đề tài cải tiến","Improvement task tracker"],top:["설비 정지 원인 TOP 5 (전체 기간)","Top 5 nguyên nhân dừng máy (toàn bộ)","Top 5 downtime causes (all)"],
+factory:["공장","Xưởng","Plant"],plan:["생산 계획","Kế hoạch SX","Plan"],act:["생산 실적","Thực tế SX","Actual"],rate:["달성률","Tỷ lệ đạt","Rate"],issue:["주요 이슈 및 조치 (담당)","Vấn đề chính & xử lý (PT)","Issues & actions (PIC)"],mi:["모델/품목","Model/Item","Model/Item"],rsn:["미달성사유","Lý do không đạt","Shortfall reason"],rdt:["상세사유","Lý do chi tiết","Detail"],
+insType:["검사 구분","Loại kiểm tra","Inspection"],model:["모델","Model","Model"],insQty:["검사수","SL kiểm","Inspected"],ngQty:["불량수","SL lỗi","Defects"],ngRate:["불량률","Tỷ lệ lỗi","Defect rate"],mainDef:["주요 불량","Lỗi chính","Main defect"],causeAct:["원인 / 조치","Nguyên nhân / Xử lý","Cause / Action"],pic:["담당자","Phụ trách","PIC"],
+eq:["모델 / 라인 / 설비·지그","Model / Line / Thiết bị, jig","Model / Line / Equipment"],stopStart:["정지 시작","Bắt đầu dừng","Stop time"],recover:["복구 시각","Chạy lại","Restart"],stopH:["정지시간(h)","Thời gian dừng (h)","Downtime (h)"],cnt:["횟수","Số lần","Count"],stopCause:["정지 원인","Nguyên nhân dừng","Stop cause"],
+item:["품목","Mã hàng","Item"],pname:["품명","Tên hàng","Part"],diff:["차이","Chênh lệch","Diff"],rateS:["달성율(%)","Tỷ lệ đạt (%)","Achv. (%)"],sPlan:["계획","Kế hoạch","Plan"],sAct:["실적","Kết quả","Actual"],sNote:["원인 및 대책","Nguyên nhân & đối sách","Cause & countermeasure"],line:["Line","Line","Line"],proc:["공정","Công đoạn","Process"],status:["진행 상태","Tình trạng","Status"],remark:["비고","Ghi chú","Remarks"],rank:["순위","Hạng","Rank"],
+defType:["불량 유형","Loại lỗi","Defect type"],occ:["발생 수량","SL phát sinh","Qty"],causeAn:["원인 분석","Phân tích nguyên nhân","Cause analysis"],fix:["개선 대책","Đối sách cải tiến","Countermeasure"],due:["목표 일자","Ngày mục tiêu","Target date"],issue7:["주요 이슈","Vấn đề chính","Main issues"],support:["지원 요청 / 타부서 협조","Yêu cầu hỗ trợ / phối hợp","Support request"],
+no:["번호","STT","No."],cat:["분류","Phân loại","Category"],line2:["공장 / 라인","Xưởng / Line","Plant / Line"],task:["과제명","Tên đề tài","Task"],prob:["문제 / 현황","Vấn đề / Hiện trạng","Problem / Status"],due2:["목표일","Hạn","Due"],pct:["진행률(%)","Tiến độ (%)","Progress (%)"],st:["상태","Trạng thái","State"],total:["TOTAL","TỔNG","TOTAL"],
+sumK:["전체 {t}건 · 진행중 {a} · 지연 {b} · 완료 {c}","Tổng {t} · Đang làm {a} · Trễ {b} · Xong {c}","Total {t} · In progress {a} · Delayed {b} · Done {c}"],sumE:["합계 {h}h · {n}건","Tổng {h}h · {n} lần","Total {h}h · {n}"],
+month:["월","Tháng","Month"],dayL:["일자","Ngày","Day"],nDays:["{n}일","{n} ngày","{n} days"],prevDay:["이전 날짜","Ngày trước","Previous day"],nextDay:["다음 날짜","Ngày sau","Next day"],
+viewReport:["보고서 보기","Xem báo cáo","Report view"],viewEdit:["편집 모드","Chỉnh sửa","Edit mode"],collapse:["기능 접기","Ẩn chức năng","Hide tools"],expand:["기능 펼치기","Hiện chức năng","Show tools"],saved:["저장됨","Đã lưu","Saved"],notSaved:["저장 전","Chưa lưu","Not saved"],
+bNewDay:["새 날짜 입력","Nhập ngày mới","New day"],bDelDay:["이 날짜 삭제","Xóa số liệu ngày","Delete this day"],bNewMonth:["새 달 추가","Thêm tháng mới","New month"],bDelMonth:["달 전체 삭제","Xóa cả tháng","Delete month"],
+bUpload:["데이터 업로드","Upload dữ liệu (CSV/Excel)","Upload data (CSV/Excel)"],bOrig:["원본 엑셀 자동 반영","Nạp file Excel gốc (tự động)","Load original Excel (auto)"],bPdf:["PDF 일보 업로드","Nạp PDF báo cáo ngày","Attach daily PDF"],bBackup:["데이터 백업","Sao lưu dữ liệu","Backup data"],bRestore:["백업 파일 복원","Khôi phục từ file sao lưu","Restore from backup"],
+bHistory:["버전 기록","Lịch sử phiên bản","Version history"],bExcel:["엑셀 내보내기","Xuất Excel","Export Excel"],bHtml:["최신 HTML 다운로드","Tải HTML mới nhất","Download latest HTML"],bAuto:["HTML 자동 저장","Bật tự động lưu HTML","Auto-save HTML"],bAutoOn:["HTML 자동 저장 중","Đang tự động lưu HTML","Auto-saving HTML"],bAutoPaused:["HTML 자동 저장 재개","Tiếp tục tự động lưu HTML","Resume HTML auto-save"],bPrint:["인쇄/PDF","In / Xuất PDF","Print / PDF"],
+ok:["확인","Đồng ý","OK"],cancel:["취소","Hủy","Cancel"],close:["닫기","Đóng","Close"],del:["삭제","Xóa","Delete"],restore:["복원","Khôi phục","Restore"],view:["보기","Xem","View"],go:["이동","Chuyển đến","Go"],apply:["반영","Nạp","Import"],
+newDayTitle:["새 날짜 입력","Nhập ngày mới","New day"],newMonthTitle:["새 달 추가","Thêm tháng mới","New month"],pickDate:["날짜","Ngày","Date"],pickMonth:["월","Tháng","Month"],startDate:["첫 날짜","Ngày đầu tiên","First date"],copyMode:["초기 데이터","Dữ liệu ban đầu","Start with"],
+cm_template:["기본 양식 (05 신모델 준비는 빈 칸)","Biểu mẫu mặc định (mục 05 để trống)","Default template (section 05 empty)"],cm_copy05:["최근 날짜의 05 신모델 준비만 복사","Chỉ sao chép mục 05 (model mới) từ ngày gần nhất","Copy section 05 from the latest day"],cm_copyAll:["최근 날짜 전체 복사","Sao chép toàn bộ ngày gần nhất","Copy the whole latest day"],cm_blank:["빈 양식","Biểu mẫu trống","Blank form"],
+dayExists:["{d} 은(는) 이미 있습니다. 해당 날짜로 이동할까요?","Ngày {d} đã tồn tại. Chuyển đến ngày đó?","{d} already exists. Go to it?"],
+cDelRow:["이 행을 삭제할까요?","Xóa dòng này?","Delete this row?"],delDayQ:["{d} 보고서를 삭제할까요?\n첨부 PDF도 함께 삭제됩니다. (삭제 전 버전이 기록됩니다)","Xóa báo cáo ngày {d}?\nPDF đính kèm cũng bị xóa. (Hệ thống tự lưu một phiên bản trước khi xóa)","Delete the report for {d}?\nAttached PDFs are deleted too. (A version is saved first)"],
+delMonthQ:["{m} 전체 {n}일 보고서를 삭제할까요?\n첨부 PDF도 함께 삭제됩니다. (삭제 전 버전이 기록됩니다)","Xóa cả {m} ({n} ngày)?\nPDF đính kèm cũng bị xóa. (Hệ thống tự lưu một phiên bản trước khi xóa)","Delete all {n} reports of {m}?\nAttached PDFs are deleted too. (A version is saved first)"],
+deleted:["삭제했습니다","Đã xóa","Deleted"],created:["{d} 보고서를 만들었습니다","Đã tạo báo cáo ngày {d}","Created report for {d}"],renamed:["보고일자를 {d}(으)로 변경했습니다","Đã đổi ngày báo cáo thành {d}","Report date changed to {d}"],
+lib:["엑셀 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인하세요.","Không tải được thư viện Excel. Kiểm tra kết nối Internet.","Could not load the Excel library. Check your connection."],readFail:["파일을 읽지 못했습니다: {f}","Không đọc được file: {f}","Could not read file: {f}"],
+unk:["인식할 수 없는 파일","Không nhận dạng được file","Unrecognized file"],iData:["DATA 시트","sheet DATA","DATA sheet"],iTpl:["원본 양식","biểu mẫu gốc","template"],iTasks:["개선과제","đề tài cải tiến","improvement tasks"],noDateCur:["C3 날짜가 없어 현재 날짜({d})에 반영했습니다","Ô C3 không có ngày → đã nạp vào ngày đang mở ({d})","No date in C3 → imported into the open day ({d})"],
+prodTitle:["생산 실적 반영 (01)","Nạp kết quả sản xuất (mục 01)","Import production (section 01)"],stopTitle:["설비 정지 반영 (03)","Nạp dừng thiết bị (mục 03)","Import downtime (section 03)"],file:["파일","File","File"],
+dataDate:["데이터 날짜","Ngày số liệu","Data date"],target:["반영할 보고서","Nạp vào báo cáo ngày","Import into report of"],tgSame:["{d} – 같은 날 (데이터 날짜 = 보고일자)","{d} – cùng ngày (ngày số liệu = ngày báo cáo)","{d} – same day (data date = report date)"],tgNext:["{d} – 다음 날","{d} – ngày hôm sau","{d} – next day"],tgCur:["{d} – 현재 열린 날짜","{d} – ngày đang mở","{d} – open day"],
+allDays:["파일의 모든 날짜를 각 보고서에 반영 ({n}일)","Nạp tất cả các ngày trong file vào từng báo cáo ({n} ngày)","Import every date in the file into its report ({n} days)"],
+prodRules:["3공장 모델 (한 줄에 하나) · 나머지 ASSEMBLY → 1공장 · 4F ASSEMBLY → 4공장","Model thuộc 3공장 (mỗi dòng 1 model) · ASSEMBLY còn lại → 1공장 · 4F ASSEMBLY → 4공장","Plant 3 models (one per line) · other ASSEMBLY → Plant 1 · 4F ASSEMBLY → Plant 4"],
+stopRules:["공장 구분 규칙 (한 줄: 키워드 => 공장 · 해당 없음 → 1공장)","Quy tắc phân xưởng (mỗi dòng: từ khóa => xưởng · không khớp → 1공장)","Plant rules (one per line: keywords => plant · no match → Plant 1)"],
+keepNote:["직접 수정한 내용(주요 이슈·사유·정지 원인·담당자)은 유지됩니다. 행 수는 데이터에 맞춰 자동으로 늘어나거나 줄어듭니다.","Nội dung bạn đã tự sửa (vấn đề, lý do, nguyên nhân dừng, phụ trách) được giữ nguyên. Số dòng tự tăng / giảm theo số liệu.","Text you edited by hand is kept. Row counts grow or shrink to fit the data."],
+rowsN:["ASSEMBLY / 4F ASSEMBLY {n}행","{n} dòng ASSEMBLY / 4F ASSEMBLY","{n} ASSEMBLY / 4F ASSEMBLY rows"],
+prodDone:["{p} 생산 실적 → {t}","kết quả SX ngày {p} → báo cáo {t}","{p} production → {t} report"],prodMulti:["{n}일 생산 실적 반영","kết quả SX {n} ngày (mỗi ngày → đúng báo cáo của ngày đó)","production for {n} days"],prodNone:["ASSEMBLY / 4F ASSEMBLY 데이터가 없습니다","Không có dữ liệu ASSEMBLY / 4F ASSEMBLY","No ASSEMBLY / 4F ASSEMBLY rows"],
+stopDone:["{p} 정지 {n}회 → {t}","dừng ngày {p} ({n} lần) → báo cáo {t}","{p} downtime ({n}) → {t} report"],stopMulti:["{n}일 설비 정지 반영","dừng thiết bị {n} ngày","downtime for {n} days"],stopNone:["정지 데이터가 없습니다","Không có dữ liệu dừng","No downtime rows"],stopTotal:["합계 {h}h · {m}분 · {n}회","Tổng {h}h · {m} phút · {n} lần","Total {h}h · {m} min · {n} stops"],
+imported:["반영 완료: {list}","Đã nạp: {list}","Imported: {list}"],
+pdfTitle:["첨부 PDF – {d}","PDF đính kèm – {d}","Attached PDFs – {d}"],pdfEmpty:["첨부된 PDF가 없습니다.","Chưa có PDF nào.","No PDFs attached."],addPdf:["PDF 추가","Thêm PDF","Add PDF"],pdfAdded:["PDF {n}개를 {d}에 첨부했습니다","Đã đính kèm {n} PDF vào ngày {d}","Attached {n} PDF(s) to {d}"],pdfMissing:["파일 데이터 없음","Không còn dữ liệu file","File data missing"],pdfPick:["왼쪽 목록에서 PDF를 선택하세요","Chọn một PDF ở danh sách bên trái","Pick a PDF from the list"],
+histTitle:["버전 기록","Lịch sử phiên bản","Version history"],histEmpty:["기록된 버전이 없습니다.","Chưa có phiên bản nào.","No versions yet."],histNote:["Ctrl+S, 10분마다 자동, 삭제·복원·업로드 전에 자동 기록됩니다 (최근 60개). PDF 파일은 버전에 포함되지 않습니다.","Tự ghi khi bấm Ctrl+S, mỗi 10 phút, và trước khi xóa / khôi phục / nạp dữ liệu (giữ 60 bản gần nhất). File PDF không nằm trong phiên bản.","Recorded on Ctrl+S, every 10 minutes, and before delete / restore / import (last 60 kept). PDF files are not part of versions."],
+restoreQ:["이 버전으로 복원할까요? 현재 상태는 새 버전으로 보관됩니다.","Khôi phục về phiên bản này? Trạng thái hiện tại sẽ được lưu thành một phiên bản mới.","Restore this version? The current state is kept as a new version."],restored:["복원했습니다","Đã khôi phục","Restored"],
+v_manual:["수동 저장","Lưu thủ công","Manual save"],v_auto:["자동 기록","Tự động","Auto"],v_del:["삭제 전","Trước khi xóa","Before delete"],v_imp:["업로드 전","Trước khi nạp","Before import"],v_restore:["복원 전","Trước khi khôi phục","Before restore"],
+backupDone:["백업 파일을 다운로드했습니다","Đã tải file sao lưu","Backup downloaded"],bad:["올바른 백업 파일이 아닙니다.","File sao lưu không hợp lệ.","Invalid backup file."],restoreQ2:["백업 ({d}) 으로 전체 데이터를 교체할까요?\n현재 상태는 버전 기록에 보관됩니다.","Thay toàn bộ dữ liệu bằng bản sao lưu ({d})?\nTrạng thái hiện tại được giữ trong Lịch sử phiên bản.","Replace all data with the backup ({d})?\nThe current state is kept in Version history."],
+exportTitle:["엑셀 내보내기","Xuất Excel","Export Excel"],exDay:["현재 날짜 ({d})","Ngày đang mở ({d})","Open day ({d})"],exMonth:["{m} 전체 – 날짜별 시트 {n}개","Cả {m} – {n} sheet (mỗi ngày 1 sheet)","All of {m} – {n} sheets (one per day)"],exNote:["개선과제 시트와 DATA 시트(다시 업로드용)가 함께 포함됩니다.","Kèm sheet Đề tài cải tiến và sheet DATA (dùng để Upload lại).","Includes the improvement-task sheet and a DATA sheet (for re-upload)."],exported:["엑셀 파일을 만들었습니다","Đã xuất file Excel","Excel file created"],
+autoUnsupported:["이 브라우저는 파일 자동 저장을 지원하지 않습니다. Chrome 또는 Edge에서 열거나 '최신 HTML 다운로드'를 사용하세요.","Trình duyệt này không hỗ trợ tự ghi file. Hãy mở bằng Chrome/Edge hoặc dùng 'Tải HTML mới nhất'.","This browser cannot auto-save files. Open in Chrome/Edge or use 'Download latest HTML'."],
+autoOn:["HTML 자동 저장 켜짐 → {f}","Đã bật tự động lưu HTML → {f}","HTML auto-save on → {f}"],autoOff:["HTML 자동 저장을 껐습니다","Đã tắt tự động lưu HTML","HTML auto-save off"],autoErr:["HTML 파일 저장 실패: {e}","Lỗi ghi file HTML: {e}","HTML save failed: {e}"],autoOffQ:["HTML 자동 저장을 끌까요?","Tắt tự động lưu HTML?","Turn off HTML auto-save?"],
+shipImp:["엑셀 / 사진 불러오기","Nạp Excel / Ảnh","Import Excel / Photo"],shipTitle:["출하 실적 반영 (04)","Nạp kết quả xuất hàng (mục 04)","Import shipping (section 04)"],
+shipOcr:["사진 판독 중… {p}%","Đang đọc ảnh… {p}%","Reading photo… {p}%"],shipOcrNote:["사진 판독(OCR) 결과입니다. 숫자를 확인·수정한 후 반영하세요.","Kết quả đọc ảnh (OCR) – hãy kiểm tra / sửa số trước khi nạp.","OCR result – check / fix the numbers before importing."],
+shipXlsNote:["엑셀 파일에서 읽은 값입니다.","Số liệu đọc từ file Excel.","Values read from the Excel file."],shipNone:["출하 표를 찾지 못했습니다: {f}","Không tìm thấy bảng xuất hàng trong: {f}","No shipping table found in: {f}"],
+shipDone:["출하 {n}개 품목 → {d}","xuất hàng {n} mã → báo cáo {d}","shipping {n} items → {d}"],tgFile:["{d} – 파일/사진에 적힌 날짜","{d} – ngày ghi trên file / ảnh","{d} – date on the file / photo"],
+ocrFail:["사진 판독 엔진을 불러오지 못했습니다. 인터넷 연결을 확인하세요.","Không tải được bộ đọc ảnh (OCR). Kiểm tra kết nối Internet.","Could not load the OCR engine. Check your connection."],
+htmlDone:["데이터가 포함된 HTML을 다운로드했습니다","Đã tải file HTML (gồm toàn bộ dữ liệu)","Downloaded HTML with all data"],savedToast:["저장했습니다","Đã lưu","Saved"]};
+const LI={ko:0,vi:1,en:2};
+let lang="vi";
+const T=(k,v)=>{let s=W[k]?W[k][LI[lang]]:k;if(v)s=s.replace(/\{(\w+)\}/g,(m,x)=>v[x]??"");return s};
+const SUBL=k=>W[k]?W[k][lang==="ko"?1:0]:"";
+const WD={ko:["일","월","화","수","목","금","토"],vi:["CN","T2","T3","T4","T5","T6","T7"],en:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]};
+
+/* =====================================================================
+   2. LISTS & SECTIONS
+   ===================================================================== */
+const FAC=["1공장","2공장","3공장","4공장"],NL=["Auto","Thủ công"],NP=["Vinyl","điện trở","gắn Tape","lazer MTS","Vision chức năng","All công đoạn"],NS=["đang setup","đang chuẩn bị thiết bị","đang chuẩn bị vật tư","đang test máy","đang sản xuất","hoàn thành"],CAT=["신모델","WORST 불량","설비 비가동","인력 효율화"],ST=["계획","진행중","지연","완료","보류"],BASIS=["전일 실적","당일 계획"];
+const LAB={ // display labels for stored (Korean) values
+  "1공장":["1공장","Xưởng 1","Plant 1"],"2공장":["2공장","Xưởng 2","Plant 2"],"3공장":["3공장","Xưởng 3","Plant 3"],"4공장":["4공장","Xưởng 4","Plant 4"],
+  "신모델":["신모델","Model mới","New model"],"WORST 불량":["WORST 불량","Lỗi WORST","WORST defect"],"설비 비가동":["설비 비가동","Dừng thiết bị","Downtime"],"인력 효율화":["인력 효율화","Hiệu quả nhân lực","Manpower efficiency"],
+  "계획":["계획","Kế hoạch","Planned"],"진행중":["진행중","Đang làm","In progress"],"지연":["지연","Trễ hạn","Delayed"],"완료":["완료","Hoàn thành","Done"],"보류":["보류","Tạm hoãn","On hold"]};
+const lab=v=>LAB[v]?LAB[v][LI[lang]]:v;
+const PLANT3_DEFAULT=["SM-A576B ASSY CAM DECO","UPPER CAM UW_ASSY","UPPER CAM WIDE_ASSY","SM-F971U ASSY CAM DECO MID","SM-F976U ASSY CAM DECO MID"];
+const STOPR_DEFAULT=["A576 CAM => 3공장","Q8 => 3공장","F971 => 3공장","F976 => 3공장","UPPER CAM => 3공장","A58 => 4공장"];
+const FLAG={ko:'<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#fff"/><circle cx="15" cy="10" r="5" fill="#c60c30"/><path d="M10 10a5 5 0 0 0 10 0z" fill="#003478"/></svg>',vi:'<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#da251d"/><path d="M15 4l1.8 5.5h5.7l-4.6 3.4 1.8 5.4-4.7-3.3-4.7 3.3 1.8-5.4-4.6-3.4h5.7z" fill="#ff0"/></svg>',en:'<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#fff"/><path d="M0 2h30M0 6h30M0 10h30M0 14h30M0 18h30" stroke="#b22234" stroke-width="2"/><rect width="13" height="10.5" fill="#3c3b6e"/></svg>'};
+const SEC={
+p:{no:"01",t:"s1",cols:[["f","factory","sel",FAC],["item","mi","area"],["plan","plan","num"],["act","act","num"],["_c","rate","calc"],["rsn","rsn","area"],["rdt","rdt","area"]]},
+q:{no:"02",t:"s2",cols:[["f","factory","sel",FAC],["type","insType","text"],["model","model","text"],["n","insQty","num"],["ng","ngQty","num"],["_c","ngRate","calc"],["def","mainDef","area"],["act","causeAct","area"],["pic","pic","text"]]},
+e:{no:"03",t:"s3",cols:[["f","factory","sel",FAC],["eq","eq","area"],["s","stopStart","time"],["r","recover","time"],["h","stopH","num"],["cnt","cnt","num"],["cause","stopCause","area"],["pic","pic","text"]]},
+s:{no:"04",t:"s4",total:1,cols:[["item","item","text"],["name","pname","text"],["plan","sPlan","num"],["act","sAct","num"],["_d","diff","calc"],["_c","rateS","calc"],["note","remark","area"]]},
+n:{no:"05",t:"s5",cols:[["m","model","text"],["l","line","sel",NL],["p","proc","sel",NP],["st","status","sel",NS],["plan","sPlan","area"],["x","remark","area"]]},
+w:{no:"06",t:"s6",cols:[["_n","rank","calc"],["f","factory","sel",FAC],["m","model","text"],["type","defType","text"],["qty","occ","num"],["rate","ngRate","text"],["cause","causeAn","area"],["fix","fix","area"],["pic","pic","text"],["due","due","date"]]},
+k:{no:"",t:"sk",cols:[["_n","no","calc"],["cat","cat","sel",CAT],["line","line2","text"],["name","task","text"],["prob","prob","area"],["fix","fix","area"],["pic","pic","text"],["due","due2","date"],["pct","pct","num"],["st","st","sel",ST]]}};
+const DAY_SECS=["p","q","e","s","n","w"];
+const SHIP_LIST=[["A165","REAR"],["A175","REAR"],["A566","FRONT"],["A576","FRONT"],["F976","SUB"],["A276","FRONT"],["A276","REAR"],["A176","FRONT"],["A576","CAM"],["F976U(Q8)","CAM"],["F976U(V8)","CAM"],["SM-F971U(H8)","CAM"],["A185","FRONT"],["A185","REAR"]];
+const shipHasData=R=>(R||[]).some(r=>["item","name","plan","act","note"].some(k=>String(r[k]??"").trim()));
+
+/* =====================================================================
+   3. STATE  (S = {days:{date:{p:[],q:[],…,basis,writer,checker,issue,support}}, tasks:[], cur, savedAt, pdfs:{}, settings:{}})
+   ===================================================================== */
+const LSK="assy-report-v4";
+let S=null, tab="r";
+const clone=o=>JSON.parse(JSON.stringify(o));
+const dates=()=>Object.keys(S.days).sort(), day=()=>S.days[S.cur], rows=s=>s==="k"?S.tasks:day()[s];
+const monthOf=d=>d.slice(0,7), months=()=>[...new Set(dates().map(monthOf))].sort().reverse(), daysOf=m=>dates().filter(d=>monthOf(d)===m);
+const isEmptyRow=r=>!Object.entries(r||{}).some(([k,v])=>!/A$|^_/.test(k)&&String(v??"").trim()!=="");
+const live=R=>(R||[]).filter(r=>!isEmptyRow(r));
+
+/* data written by the previous version (flat keys like "p0plan") → arrays */
+function fromV2(st){
+  const MAP={issAuto:"issA",rsnAuto:"rsnA",rdtAuto:"rdtA",causeAuto:"causeA",picAuto:"picA",key:"_k"};
+  const out={days:{},tasks:[],cur:st.cur,savedAt:st.savedAt||0,pdfs:st.pdfs||{},photos:st.photos||{},settings:{...(st.settings||{})}};
+  Object.entries(st.days||{}).forEach(([d,o])=>{ const D={};
+    Object.entries(o||{}).forEach(([k,v])=>{ const m=k.match(/^([pqesnw])(\d+)([A-Za-z_]\w*)$/);
+      if(m && SEC[m[1]]){ const f=MAP[m[3]]||m[3]; if(m[1]==="e"&&(f==="fix"||f==="done")) return; (D[m[1]]=D[m[1]]||[]); (D[m[1]][+m[2]]=D[m[1]][+m[2]]||{})[f]=v; }
+      else if(k!=="__rows") D[k]=v; });
+    DAY_SECS.forEach(s=>{ if(D[s]) D[s]=D[s].filter(r=>r && !isEmptyRow(r)); });
+    out.days[d]=D; });
+  Object.entries(st.tasks||{}).forEach(([k,v])=>{ const m=k.match(/^k(\d+)(\w+)$/); if(m) (out.tasks[+m[1]]=out.tasks[+m[1]]||{})[m[2]]=v; });
+  out.tasks=out.tasks.filter(r=>r && !isEmptyRow(r));
+  return out;
+}
+function toV3(st){
+  if(!st||typeof st!=="object"||!st.days) return null;
+  const flat = !Array.isArray(st.tasks) || Object.values(st.days).some(d=>d&&Object.keys(d).some(k=>/^[pqesnw]\d+[a-zA-Z]/.test(k)));
+  const o = flat ? fromV2(st) : clone(st);
+  o.tasks=o.tasks||[]; o.pdfs=o.pdfs||{}; o.photos=o.photos||{}; o.settings=o.settings||{}; o.savedAt=o.savedAt||0;
+  if(!Object.keys(o.days).length) o.days[ymd(new Date())]={basis:BASIS[0]};
+  if(!o.cur||!o.days[o.cur]) o.cur=Object.keys(o.days).sort().pop();
+  Object.values(o.days).forEach(D=>(D&&D.p||[]).forEach(r=>{if(r&&(r.iss!==undefined||r.issA!==undefined)){
+    if(r.item===undefined&&r.iss!==undefined)r.item=r.iss;if(r.itemA===undefined&&r.issA!==undefined)r.itemA=r.issA;delete r.iss;delete r.issA}
+    ["item","itemA"].forEach(k=>{const v=r&&r[k];if(typeof v==="string"&&/\d\s*\/\s*[\d,.]+\s*\(\s*[\d.,]+%\s*\)/.test(v))
+      r[k]=v.split(/;\s*|\n/).map(x=>x.replace(/\s*:?\s*[\d,.]+\s*\/\s*[\d,.]+\s*\(\s*[\d.,]+%\s*\)\s*$/,"").trim()).filter(Boolean).join("\n")})}));
+  if(!o.settings.mi2){Object.values(o.days).forEach(D=>{if(D&&D.prodSrc)(D.p||[]).forEach(r=>{if(r&&r.f==="4공장"&&(!String(r.item||"").trim()||r.item===r.itemA)){r.item="4F ASSEMBLY";r.itemA="4F ASSEMBLY"}})});o.settings.mi2=true}
+  return o;
+}
+function fill(){ const D=day(); DAY_SECS.forEach(k=>{ D[k]=D[k]||[]; if(!D[k].length) D[k].push({}); }); D.basis=D.basis||BASIS[0]; if(!S.tasks.length) S.tasks.push({}); }
+
+/* ---------- storage: localStorage (data) + IndexedDB (PDF files, versions, file handle) ---------- */
+const DB={db:null,
+  open(){return new Promise(res=>{try{if(!window.indexedDB)return res(null);const r=indexedDB.open("assy-daily-db",1);
+    r.onupgradeneeded=()=>{const d=r.result;["files","versions"].forEach(s=>d.objectStoreNames.contains(s)||d.createObjectStore(s,{keyPath:"id"}));d.objectStoreNames.contains("kv")||d.createObjectStore("kv",{keyPath:"k"})};
+    r.onsuccess=()=>{this.db=r.result;res(this.db)};r.onerror=()=>res(null)}catch(e){res(null)}})},
+  req(st,mode,fn){return new Promise(res=>{if(!this.db)return res(null);try{const tx=this.db.transaction(st,mode),q=fn(tx.objectStore(st));tx.oncomplete=()=>res(q&&q.result);tx.onerror=()=>res(null)}catch(e){res(null)}})},
+  put(s,o){return this.req(s,"readwrite",x=>x.put(o))},get(s,id){return this.req(s,"readonly",x=>x.get(id))},all(s){return this.req(s,"readonly",x=>x.getAll())},del(s,id){return this.req(s,"readwrite",x=>x.delete(id))}};
+const memFiles={};
+async function putFile(o){memFiles[o.id]=o;await DB.put("files",o);if(typeof svPutFile==="function")svPutFile(o)}
+async function getFile(id){return (await DB.get("files",id))||memFiles[id]||(typeof svGetFile==="function"?await svGetFile(id):null)}
+async function delFile(id){delete memFiles[id];await DB.del("files",id);if(typeof svDelFile==="function")svDelFile(id)}
+
+let persistT=null, dirtySnap=false, lastHtmlAt=0;
+function persist(){ S.savedAt=Date.now(); try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){} dirtySnap=true; updateSaved(); scheduleAutoHtml(); if(typeof svSchedule==="function")svSchedule(); }
+function touch(){ clearTimeout(persistT); persistT=setTimeout(persist,350); }
+async function snapshot(label){
+  await DB.put("versions",{id:Date.now()+Math.random(),at:Date.now(),label,nDays:Object.keys(S.days).length,data:JSON.stringify(S)});
+  const all=((await DB.all("versions"))||[]).sort((a,b)=>b.at-a.at); for(const v of all.slice(60)) await DB.del("versions",v.id);
+  dirtySnap=false;
+}
+
+/* =====================================================================
+   4. HELPERS
+   ===================================================================== */
+const pad=n=>String(n).padStart(2,"0");
+const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parseYmd=s=>{const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
+const addDays=(s,n)=>{const d=parseYmd(s);d.setDate(d.getDate()+n);return ymd(d)};
+const num=v=>{v=parseFloat(String(v??"").replace(/,/g,""));return isNaN(v)?0:v};
+const fmtNum=v=>{if(v==null||String(v).trim()==="")return"";const n=parseFloat(String(v).replace(/,/g,""));return isNaN(n)?String(v):n.toLocaleString("en-US",{maximumFractionDigits:4})};
+const fmt=n=>Math.round(n).toLocaleString("en-US");
+const pct=(a,b,d=1)=>b?(a/b*100).toFixed(d)+"%":"";
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtDay=s=>{const d=parseYmd(s),w=WD[lang][d.getDay()];return lang==="ko"?`${s.slice(5)} (${w})`:lang==="vi"?`${pad(d.getDate())}/${pad(d.getMonth()+1)} (${w})`:`${d.toLocaleString("en",{month:"short"})} ${d.getDate()} (${w})`};
+const fmtDayLong=s=>{const[y,m,d]=s.split("-");return lang==="vi"?`${d}/${m}/${y}`:s};
+const fmtMonth=m=>{const[y,mo]=m.split("-");return lang==="ko"?`${y}년 ${+mo}월`:lang==="vi"?`Tháng ${mo}/${y}`:new Date(+y,+mo-1,1).toLocaleString("en",{month:"short",year:"numeric"})};
+const fmtStamp=t=>{const d=new Date(t),hm=`${pad(d.getHours())}:${pad(d.getMinutes())}`;return lang==="vi"?`${hm} ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`:`${ymd(d)} ${hm}`};
+const fmtSize=b=>b>1048576?(b/1048576).toFixed(1)+" MB":Math.max(1,Math.round(b/1024))+" KB";
+function dl(name,data,type){const a=document.createElement("a");a.href=URL.createObjectURL(data instanceof Blob?data:new Blob([data],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
+const blobToB64=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(String(f.result).split(",")[1]||"");f.onerror=()=>r("");f.readAsDataURL(b)});
+const b64ToBlob=(b64,type)=>{const bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new Blob([u],{type})};
+function toast(msg,kind=""){const t=document.createElement("div");t.className="toast"+(kind?" t-"+kind:"");t.textContent=msg;$("toasts").appendChild(t);setTimeout(()=>t.remove(),kind==="err"?6500:3500)}
+const lib=(n,u)=>window[n]?Promise.resolve(true):new Promise(r=>{const s=document.createElement("script");s.src=u;s.onload=()=>r(!!window[n]);s.onerror=()=>r(false);document.head.appendChild(s)}).then(ok=>{if(!ok)toast(T("lib"),"err");return ok});
+const XJS="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js",EJS="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js";
+
+function modal({title,body,actions=[],wide=false,width,onMount}){
+  return new Promise(res=>{
+    const m=document.createElement("div");m.className="mask";
+    m.innerHTML=`<div class="modal${wide?" wide":""}"${width?` style="width:min(${width}px,100%)"`:""}><div class="mh"><span>${esc(title)}</span><button class="x" data-v="__close">×</button></div><div class="mb">${body}</div>${actions.length?`<div class="mf">${actions.map(a=>`<button class="mbtn ${a.cls||""}" data-v="${a.v}">${esc(a.label)}</button>`).join("")}</div>`:""}</div>`;
+    const done=v=>{const data={};m.querySelectorAll("[name]").forEach(e=>{if(e.type==="radio"||e.type==="checkbox"){if(e.checked)data[e.name]=e.value}else data[e.name]=e.value});m.remove();document.removeEventListener("keydown",kd);res({v,data})};
+    const kd=e=>{if(e.key==="Escape")done(null)};
+    m.addEventListener("click",e=>{const b=e.target.closest("[data-v]");if(b&&b.closest(".mh,.mf"))done(b.dataset.v==="__close"?null:b.dataset.v);else if(e.target===m)done(null)});
+    document.addEventListener("keydown",kd);document.body.appendChild(m);m._close=done;if(onMount)onMount(m)});
+}
+const confirmBox=(msg,okLabel=T("ok"),danger=false)=>modal({title:T("title"),body:`<div style="white-space:pre-line">${esc(msg)}</div>`,actions:[{v:"no",label:T("cancel")},{v:"yes",label:okLabel,cls:danger?"dan":"pri"}]}).then(r=>r.v==="yes");
+
+/* =====================================================================
+   5. RENDER
+   ===================================================================== */
+const ICON={plus:'<path d="M12 5v14M5 12h14"/>',trash:'<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/>',calPlus:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M12 13v6M9 16h6"/>',calX:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M10 13l4 4M14 13l-4 4"/>',
+ upload:'<path d="M12 15V3M7 8l5-5 5 5M4 17v3h16v-3"/>',sheet:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/>',pdf:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/>',save:'<path d="M5 3h11l5 5v13H5z"/><path d="M8 3v5h7M8 21v-7h8v7"/>',restore:'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',xls:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 8l6 8M15 8l-6 8"/>',down:'<path d="M12 3v12M7 10l5 5 5-5M4 17v3h16v-3"/>',autosave:'<path d="M5 3h11l5 5v13H5z"/><path d="M8 3v5h7"/><path d="M9 15a3 3 0 1 0 3-3h-1M11 10l-1 2 2 1"/>',print:'<path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/>',
+ up:'<path d="M6 15l6-6 6 6"/>',downc:'<path d="M6 9l6 6 6-6"/>',left:'<path d="M15 6l-6 6 6 6"/>',right:'<path d="M9 6l6 6-6 6"/>',clip:'<path d="M21 11l-8.5 8.5a5 5 0 0 1-7-7L14 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 7"/>',eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',pen:'<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'};
+const ic=n=>`<svg class="ic" viewBox="0 0 24 24">${ICON[n]}</svg>`;
+const tb=(act,icon,key,cls="")=>`<button class="tb ${cls}" data-act="${act}">${ic(icon)}<span class="tx"><span class="m">${esc(T(key))}</span><span class="s">${esc(SUBL(key))}</span></span></button>`;
+const gb=(act,icon,key,cls="")=>`<button class="gb ${cls}" data-act="${act}">${ic(icon)}<span class="tx"><span class="m">${esc(T(key))}</span><span class="s">${esc(SUBL(key))}</span></span></button>`;
+
+let autoHtml={on:false,paused:false,handle:null};
+function head(){
+  const cm=monthOf(S.cur), ds=dates(), ix=ds.indexOf(S.cur), set=S.settings;
+  $("hd").innerHTML=`
+  <div class="hrow"><h1>${esc(T("title"))}</h1>
+    <button class="${tab==="r"?"on":""}" data-act="tab" data-v="r">${T("tabR")}</button><button class="${tab==="k"?"on":""}" data-act="tab" data-v="k">${T("tabK")}</button>
+    <span class="sp"></span>
+    <div class="lang"><b>LANGUAGE</b>${["ko","vi","en"].map(l=>`<button class="fl${l===lang?" on":""}" data-act="lang" data-v="${l}" title="${{ko:"한국어",vi:"Tiếng Việt",en:"English"}[l]}">${FLAG[l]}</button>`).join("")}</div></div>
+  <div class="hrow">
+    <label class="nl">${T("month")}</label><select id="selMonth">${months().map(m=>`<option value="${m}"${m===cm?" selected":""}>${esc(fmtMonth(m))}</option>`).join("")}</select>
+    <button data-act="prev" title="${esc(T("prevDay"))}"${ix<=0?" disabled":""}>${ic("left")}</button>
+    <label class="nl">${T("dayL")}</label><select id="selDay">${daysOf(cm).map(d=>`<option value="${d}"${d===S.cur?" selected":""}>${esc(fmtDay(d))}</option>`).join("")}</select>
+    <button data-act="next" title="${esc(T("nextDay"))}"${ix>=ds.length-1?" disabled":""}>${ic("right")}</button>
+    <span class="chip">${esc(T("nDays",{n:daysOf(cm).length}))}</span>
+    <button class="chip" data-act="pdfs">${ic("clip")} PDF ${(S.pdfs[S.cur]||[]).length}</button>
+    <span class="sp"></span><span class="saved" id="savedTxt"></span>
+    ${gb("view",set.view?"pen":"eye",set.view?"viewEdit":"viewReport",set.view?"on":"")}
+    ${gb("collapse",set.collapsed?"downc":"up",set.collapsed?"expand":"collapse")}
+  </div>`;
+  const ak=autoHtml.on?(autoHtml.paused?"bAutoPaused":"bAutoOn"):"bAuto";
+  $("panel").className="panel"+(set.collapsed?" hidden":"");
+  $("panel").innerHTML=`
+    <div class="prow">${tb("newDay","plus","bNewDay","green")}${tb("delDay","trash","bDelDay","red")}<span class="divider"></span>${tb("newMonth","calPlus","bNewMonth","green")}${tb("delMonth","calX","bDelMonth","red")}</div>
+    <div class="prow">${tb("upload","upload","bUpload","navyf")}${tb("orig","sheet","bOrig","greenf")}${tb("pdf","pdf","bPdf")}${tb("backup","save","bBackup")}${tb("restore","restore","bRestore")}${tb("history","clock","bHistory")}${tb("excel","xls","bExcel")}${tb("html","down","bHtml")}${tb("auto","autosave",ak,autoHtml.on?(autoHtml.paused?"warn":"on"):"")}${tb("print","print","bPrint")}</div>`;
+  document.documentElement.lang=lang; document.body.classList.toggle("report",!!set.view);
+  updateSaved();
+}
+function updateSaved(){const el=$("savedTxt");if(!el)return;el.innerHTML=S.savedAt?`${esc(T("saved"))} <b>${esc(fmtStamp(S.savedAt))}</b>${autoHtml.on&&lastHtmlAt?` · HTML <b>${esc(fmtStamp(lastHtmlAt).split(" ")[lang==="vi"?0:1])}</b>`:""}`:esc(T("notSaved"));if(typeof svStatus==="function")el.innerHTML+=svStatus()}
+
+function cell(s,i,c,v){const[k,,t,o]=c,a=`data-s="${s}" data-i="${i}" data-k="${k}"`;
+  if(t==="calc")return k==="_n"?`<td class="g c">${i+1}</td>`:`<td class="g" data-c="${s}:${i}${s==="s"?":"+k:""}"></td>`;
+  if(t==="sel"){const op=!v||o.includes(v)?o:[...o,v];return`<td class="y"><select ${a}${k==="st"&&s==="k"&&v?` class="st-${esc(v)}"`:""}><option value=""></option>${op.map(x=>`<option value="${esc(x)}"${x===v?" selected":""}>${esc(lab(x))}</option>`).join("")}</select></td>`}
+  if(t==="area")return`<td class="y"><textarea rows="1" ${a}>${esc(v)}</textarea></td>`;
+  if(t==="num")return`<td class="y${s==="k"?" prog":""}"><input ${a} class="n${s==="s"?" dash":""}" data-num="1" inputmode="decimal"${s==="s"?' placeholder="-"':""} value="${esc(fmtNum(v))}">${s==="k"?`<span class="bar" style="width:${Math.max(0,Math.min(100,num(v)))}%"></span>`:""}</td>`;
+  if(t==="time")return`<td class="y"><input ${a} class="tm" data-tm="1" inputmode="numeric" maxlength="5" placeholder="hh:mm" value="${esc(v)}"></td>`;
+  if(t==="date")return`<td class="y"><input ${a} type="date" value="${esc(v)}"></td>`;
+  return`<td class="y"><input ${a} value="${esc(v)}"></td>`}
+const thw=t=>t==="num"||t==="calc"?"width:105px":t==="sel"?"width:110px":t==="time"?"width:95px":t==="date"?"width:135px":"";
+function sec(s){const d=SEC[s],R=rows(s);
+  let h=`<section class="card" data-sec="${s}"${s==="s"?' id="shipSec"':""}><h2>${d.no?`<span class="no">${d.no}</span>`:""}${T(d.t)}<span class="sub" id="sum_${s}"></span>${s==="s"?`<span class="hsp"></span><button class="imp" data-act="shipImp">${ic("upload")} ${esc(T("shipImp"))}</button>`:""}</h2><div class="sc"><table><tr>${d.cols.map(c=>`<th style="${s==="n"&&c[0]==="m"?"width:100px":s==="p"&&c[0]==="item"?"width:210px":s==="s"&&c[0]==="item"?"width:150px":s==="s"&&c[0]==="name"?"width:110px":s==="s"&&c[2]!=="area"?"width:120px":thw(c[2])}">${T(c[1])}</th>`).join("")}<th class="x"></th></tr>`;
+  R.forEach((r,i)=>{let row=d.cols.map(c=>cell(s,i,c,r[c[0]])).join("");
+    if(s==="s"&&i>0&&String(r.item||"").trim()&&String(r.item).trim()===String(R[i-1].item||"").trim())row=row.replace('<td class="y">','<td class="y dup">');
+    h+=`<tr>${row}<td class="x"><button data-act="del" data-s="${s}" data-i="${i}" title="${T("delRow")}">×</button></td></tr>`});
+  if(s==="p")h+=`<tr class="t"><td colspan="2">${T("total")}</td><td id="pTp"></td><td id="pTa"></td><td id="pTr"></td><td colspan="2"></td><td class="x"></td></tr>`;
+  if(s==="s")h+=`<tr class="t"><td colspan="2" style="text-align:center">TOTAL</td><td id="sTp"></td><td id="sTa"></td><td id="sTd"></td><td id="sTr"></td><td></td><td class="x"></td></tr>`;
+  return h+`</table></div><button class="add" data-act="add" data-s="${s}">${T("addRow")}</button></section>`}
+function render0(){
+  fill(); head(); const D=day();
+  if(tab==="k"){$("app").innerHTML=sec("k");auto();calc();return}
+  const m=(l,k,o)=>`<div><label>${T(l)}</label>${o?`<select data-top="${k}">${(o.includes(D[k])||!D[k]?o:[...o,D[k]]).map(x=>`<option value="${esc(x)}"${x===D[k]?" selected":""}>${esc(BASIS.indexOf(x)>=0?T("b"+BASIS.indexOf(x)):x)}</option>`).join("")}</select>`:`<input data-top="${k}" value="${esc(D[k])}">`}</div>`;
+  $("app").innerHTML=`<div class="meta"><div><label>${T("date")}</label><input type="date" id="repDate" value="${S.cur}"></div>${m("writer","writer")}${m("checker","checker")}${m("basis","basis",BASIS)}</div>`
+   +DAY_SECS.map(sec).join("")
+   +`<section class="card"><h2><span class="no">07</span>${T("s7")}</h2><div class="two"><div><label>${T("issue7")}</label><textarea data-top="issue">${esc(D.issue)}</textarea></div><div><label>${T("support")}</label><textarea data-top="support">${esc(D.support)}</textarea></div></div></section>
+     <section class="card"><h2>${T("top")}</h2><div class="sc"><table class="top" id="top"></table></div></section>`;
+  auto(); calc();
+}
+const fitTA=x=>{x.style.height="auto";x.style.height=Math.max(x.scrollHeight+2,x.closest(".two")?110:30)+"px"};
+const auto=()=>document.querySelectorAll("#app textarea").forEach(fitTA);
+const setC=(k,v,c)=>{const e=document.querySelector(`[data-c="${k}"]`);if(e){e.textContent=v;e.className="g"+(c?" "+c:"")}};
+const tid=(i,v)=>{const e=$(i);if(e)e.textContent=v};
+const rateCls=r=>r===null?"":r>=100?"ok":r<95?"bad":"";
+function calc(){
+  if(tab==="k"){const t=S.tasks,c=x=>t.filter(r=>r.st===x).length;tid("sum_k",T("sumK",{t:t.filter(r=>String(r.name||"").trim()).length,a:c("진행중"),b:c("지연"),c:c("완료")}));
+    document.querySelectorAll('[data-s="k"][data-k="st"]').forEach(x=>x.className=x.value?"st-"+x.value:"");return}
+  const D=day();let pl=0,ac=0,h=0,n=0;
+  D.p.forEach((r,i)=>{pl+=num(r.plan);ac+=num(r.act);const p=num(r.plan)?num(r.act)/num(r.plan)*100:null;setC("p:"+i,p===null?"":p.toFixed(1)+"%",rateCls(p))});
+  D.q.forEach((r,i)=>setC("q:"+i,pct(num(r.ng),num(r.n),2)));
+  const dfmt=(v,blank)=>blank?"-":v===0?"-":v<0?`(${fmt(-v)})`:fmt(v);let sp=0,sa=0,sAny=false;
+  D.s.forEach((r,i)=>{const pl=num(r.plan),a=num(r.act),blank=!String(r.plan??"").trim()&&!String(r.act??"").trim(),df=a-pl;sp+=pl;sa+=a;if(!blank)sAny=true;
+    setC("s:"+i+":_d",dfmt(df,blank),!blank&&df<0?"neg":"");const p=pl?a/pl*100:null;setC("s:"+i+":_c",p===null?"":p.toFixed(1)+"%",p!==null&&p<100?"neg":"")});
+  {const df=sa-sp,tr=sp?sa/sp*100:null;tid("sTp",sAny?fmt(sp):"-");tid("sTa",sAny?fmt(sa):"-");const d1=$("sTd");if(d1){d1.textContent=sAny?dfmt(df):"-";d1.className=df<0?"neg":""}
+    const r1=$("sTr");if(r1){r1.textContent=tr===null?"":tr.toFixed(1)+"%";r1.className=tr!==null&&tr<100?"neg":""}}
+  D.e.forEach(r=>{h+=num(r.h);n+=r.h||r.eq||r.cause?(num(r.cnt)||1):0});
+  tid("pTp",fmt(pl));tid("pTa",fmt(ac));const tr=$("pTr");if(tr){tr.textContent=pct(ac,pl);tr.className=rateCls(pl?ac/pl*100:null)}
+  tid("sum_e",h||n?T("sumE",{h:(Math.round(h*100)/100).toFixed(2),n}):"");
+  const m={};dates().forEach(d=>(S.days[d].e||[]).forEach(x=>{const c=String(x.cause||"").replace(/\s*\(×\d+\)/,"").trim().toUpperCase();if(!c)return;m[c]=m[c]||{h:0,n:0};m[c].h+=num(x.h);m[c].n+=num(x.cnt)||1}));
+  const R=Object.entries(m).sort((a,b)=>b[1].h-a[1].h).slice(0,5),mx=R[0]?R[0][1].h||1:1;
+  const top=$("top"); if(top) top.innerHTML=`<tr><th style="width:60px">${T("rank")}</th><th>${T("stopCause")}</th><th style="width:140px">${T("stopH")}</th><th style="width:90px">${T("cnt")}</th><th style="width:30%"></th></tr>`+(R.length?R.map((x,i)=>`<tr><td style="text-align:center">${i+1}</td><td>${esc(x[0])}</td><td style="text-align:right">${x[1].h.toFixed(2)}</td><td style="text-align:right">${x[1].n}</td><td><div class="bg"><i style="width:${x[1].h/mx*100}%"></i></div></td></tr>`).join(""):`<tr><td colspan="5" class="empty">–</td></tr>`);
+}
+
+/* =====================================================================
+   6. DAY / MONTH MANAGEMENT
+   ===================================================================== */
+function goDay(d){if(!S.days[d])return;S.cur=d;tab="r";persist();render()}
+const latestBefore=date=>{const ds=dates(),b=ds.filter(d=>d<date);return b.length?b[b.length-1]:ds[ds.length-1]};
+function makeDay(date,mode="template"){const src=latestBefore(date)?S.days[latestBefore(date)]:null;
+  if(mode==="copyAll"&&src){const c=clone(src);delete c.prodSrc;delete c.stopSrc;return c}
+  const d=mode==="blank"?{}:{basis:BASIS[0]}; if(mode==="copy05"&&src&&src.n) d.n=clone(live(src.n));
+  const base=src&&shipHasData(src.s)?live(src.s).filter(r=>r.item||r.name).map(r=>({item:r.item||"",name:r.name||""})):SHIP_LIST.map(([item,name])=>({item,name}));
+  if(mode!=="blank") d.s=base; return d}
+const nextFree=from=>{let d=parseYmd(from);for(let i=0;i<400;i++){d.setDate(d.getDate()+1);const s=ymd(d);if(!S.days[s])return s}return ymd(new Date())};
+const copyRadios=def=>["template","copy05","copyAll","blank"].map(m=>`<label class="radio"><input type="radio" name="mode" value="${m}"${m===def?" checked":""}><span>${esc(T("cm_"+m))}</span></label>`).join("");
+async function actNewDay(){
+  const r=await modal({title:T("newDayTitle"),body:`<label class="fld"><span>${esc(T("pickDate"))}</span><input type="date" name="date" value="${nextFree(S.cur)}"></label><div class="fld"><span>${esc(T("copyMode"))}</span>${copyRadios("template")}</div>`,actions:[{v:"no",label:T("cancel")},{v:"ok",label:T("bNewDay"),cls:"pri"}]});
+  if(r.v!=="ok"||!/^\d{4}-\d{2}-\d{2}$/.test(r.data.date))return;
+  if(S.days[r.data.date]){if(await confirmBox(T("dayExists",{d:fmtDayLong(r.data.date)}),T("go")))goDay(r.data.date);return}
+  S.days[r.data.date]=makeDay(r.data.date,r.data.mode);S.cur=r.data.date;tab="r";persist();render();toast(T("created",{d:fmtDayLong(r.data.date)}),"ok")}
+async function actNewMonth(){
+  const lm=parseYmd(dates().pop().slice(0,7)+"-01");lm.setMonth(lm.getMonth()+1);const defM=`${lm.getFullYear()}-${pad(lm.getMonth()+1)}`;
+  const r=await modal({title:T("newMonthTitle"),body:`<label class="fld"><span>${esc(T("pickMonth"))}</span><input type="month" name="month" value="${defM}" id="mInp"></label><label class="fld"><span>${esc(T("startDate"))}</span><input type="date" name="date" value="${defM}-01" id="dInp"></label><div class="fld"><span>${esc(T("copyMode"))}</span>${copyRadios("template")}</div>`,
+    actions:[{v:"no",label:T("cancel")},{v:"ok",label:T("bNewMonth"),cls:"pri"}],onMount:m=>{const mi=m.querySelector("#mInp"),di=m.querySelector("#dInp");mi.addEventListener("change",()=>{if(mi.value)di.value=mi.value+"-01"})}});
+  if(r.v!=="ok")return;let date=r.data.date;if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){if(/^\d{4}-\d{2}$/.test(r.data.month))date=r.data.month+"-01";else return}
+  if(S.days[date]){if(await confirmBox(T("dayExists",{d:fmtDayLong(date)}),T("go")))goDay(date);return}
+  S.days[date]=makeDay(date,r.data.mode);S.cur=date;tab="r";persist();render();toast(T("created",{d:fmtDayLong(date)}),"ok")}
+async function removeDays(list){for(const d of list){for(const p of[...(S.pdfs[d]||[]),...(S.photos[d]||[])])await delFile(p.id);delete S.pdfs[d];delete S.photos[d];delete S.days[d]}
+  if(!Object.keys(S.days).length)S.days[ymd(new Date())]={basis:BASIS[0]};
+  if(!S.days[S.cur]){const ds=dates();S.cur=ds.filter(d=>d<list[0]).pop()||ds[0]}}
+async function actDelDay(){if(!await confirmBox(T("delDayQ",{d:fmtDayLong(S.cur)}),T("del"),true))return;await snapshot("v_del");await removeDays([S.cur]);persist();render();toast(T("deleted"))}
+async function actDelMonth(){const m=monthOf(S.cur),list=daysOf(m);if(!await confirmBox(T("delMonthQ",{m:fmtMonth(m),n:list.length}),T("del"),true))return;await snapshot("v_del");await removeDays(list);persist();render();toast(T("deleted"))}
+async function renameDay(nd){const od=S.cur;if(!/^\d{4}-\d{2}-\d{2}$/.test(nd)||nd===od){render();return}
+  if(S.days[nd]){if(await confirmBox(T("dayExists",{d:fmtDayLong(nd)}),T("go")))goDay(nd);else render();return}
+  S.days[nd]=S.days[od];delete S.days[od];if(S.pdfs[od]){S.pdfs[nd]=S.pdfs[od];delete S.pdfs[od]}if(S.photos[od]){S.photos[nd]=S.photos[od];delete S.photos[od]}S.cur=nd;persist();render();toast(T("renamed",{d:fmtDayLong(nd)}),"ok")}
+
+/* =====================================================================
+   7. IMPORT  — MES production plan / STOP LINE report / original template / this page's export
+   ===================================================================== */
+const NORM=s=>String(s??"").toUpperCase().replace(/\s+/g," ").trim();
+const ser=n=>new Date(Math.round((n-25569)*864e5)).toISOString().slice(0,10);
+const toD=v=>{if(v==null||v==="")return"";if(typeof v==="number")return ser(v);if(v instanceof Date)return ymd(v);const s=String(v).trim();let m;if(m=s.match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})/))return`${m[1]}-${pad(m[2])}-${pad(m[3])}`;if(m=s.match(/^(\d{1,2})[-./](\d{1,2})[-./](\d{4})/))return`${m[3]}-${pad(m[2])}-${pad(m[1])}`;return""};
+const toT=v=>{if(v==null||v==="")return"";if(typeof v==="number"){const m=Math.round((v%1)*1440);return`${pad(Math.floor(m/60)%24)}:${pad(m%60)}`}const m=String(v).match(/(\d{1,2}):(\d{2})/);return m?`${pad(m[1])}:${m[2]}`:String(v)};
+const grid=(wb,n)=>XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:""});
+const tgOpts=date=>[["Same",date],["Next",addDays(date,1)],["Cur",S.cur]].filter((t,i,a)=>a.findIndex(x=>x[1]===t[1])===i);
+const tgHTML=date=>`<span>${esc(T("target"))}</span>`+tgOpts(date).map(([k,d],i)=>`<label class="radio"><input type="radio" name="tg" value="${d}"${i===0?" checked":""}><span>${esc(T("tg"+k,{d:fmtDayLong(d)}))}${S.days[d]?"":" ✚"}</span></label>`).join("");
+const rulesTA=(name,list)=>`<textarea name="${name}" rows="5" style="font:12px/1.5 monospace;padding:8px;width:100%">${esc(list.join("\n"))}</textarea>`;
+const readRules=t=>String(t||"").split("\n").map(x=>x.trim()).filter(Boolean);
+
+/* ---- production plan (생산계획상세조회 P4810QA40) → 01 ---- */
+function findProd(wb){for(const n of wb.SheetNames){const rows=grid(wb,n);for(let i=0;i<Math.min(15,rows.length);i++){const h=rows[i].map(x=>String(x).trim()),c=k=>h.indexOf(k);if(c("작업장명")>=0&&c("당일계획")>=0&&c("생산양품량")>=0)return{rows,hi:i,c:{date:c("계획일자"),ws:c("작업장명"),group:c("품목그룹"),plan:c("당일계획"),act:c("생산양품량"),reason:c("미달성사유"),detail:c("상세사유"),kind:c("구분")}}}}return null}
+function prodRecs(ps){const g=(r,k)=>ps.c[k]>=0?r[ps.c[k]]:"";return ps.rows.slice(ps.hi+1).map(r=>({date:toD(g(r,"date")),ws:NORM(g(r,"ws")),group:String(g(r,"group")).trim(),kind:String(g(r,"kind")).trim(),plan:num(g(r,"plan")),act:num(g(r,"act")),reason:String(g(r,"reason")).trim(),detail:String(g(r,"detail")).trim()})).filter(r=>r.date&&(r.ws==="ASSEMBLY"||r.ws==="4F ASSEMBLY"))}
+function plantOf(r,rules){if(r.ws==="4F ASSEMBLY")return"4공장";const f=NORM(r.group+" "+r.kind),k=NORM(r.kind);return rules.some(x=>{const q=NORM(x);return q&&(f.includes(q)||k.includes(q))})?"3공장":"1공장"}
+function prodSum(recs,rules){const P={};FAC.forEach(k=>P[k]={plan:0,act:0,n:0,miss:[],items:new Set(),rsn:[],rdt:[]});const bm={};
+  recs.forEach(r=>{const p=plantOf(r,rules);P[p].plan+=r.plan;P[p].act+=r.act;P[p].n++;{const lb=p==="4공장"?r.ws:(r.group+" "+r.kind).replace(/\s+/g," ").trim();if(lb)P[p].items.add(lb)}const key=p+"|"+r.group+"|"+r.kind,m=bm[key]=bm[key]||{p,group:r.group,kind:r.kind,plan:0,act:0,rs:new Set(),dt:new Set()};m.plan+=r.plan;m.act+=r.act;if(r.reason)m.rs.add(r.reason);if(r.detail)m.dt.add(r.detail)});
+  const ms=Object.values(bm);
+  FAC.forEach(p=>{const w=ms.filter(m=>m.p===p&&(m.rs.size||m.dt.size)),pre=w.length>1;w.forEach(m=>{const tg=pre?m.group+": ":"";if(m.rs.size)P[p].rsn.push(tg+[...m.rs].join(" / "));if(m.dt.size)P[p].rdt.push(tg+[...m.dt].join(" / "))})});return P}
+function applyProd(D,P,file,pd){const old=live(D.p),pl=FAC.filter(p=>P[p].n>0);if(!pl.length)return;
+  D.p=pl.map(p=>{const v=P[p],o=old.find(r=>r.f===p)||{},r={f:p,plan:String(v.plan),act:String(v.act)};[["item",[...v.items]],["rsn",v.rsn],["rdt",v.rdt]].forEach(([t,a])=>{const au=a.join(t==="item"?"\n":"; ");r[t]=o[t]&&o[t]!==o[t+"A"]?o[t]:au;r[t+"A"]=au});return r});
+  D.prodSrc={file,date:pd,at:Date.now()}}
+async function importProduction(ps,fileName,rep){
+  const recs=prodRecs(ps);if(!recs.length){toast(T("prodNone"),"err");return false}
+  const ds=[...new Set(recs.map(r=>r.date))].sort(),def=ds.includes(S.cur)?S.cur:ds[ds.length-1],of=d=>recs.filter(r=>r.date===d);
+  let rules=S.settings.plant3||PLANT3_DEFAULT;
+  const preview=(d,rl)=>{const P=prodSum(of(d),rl);return`<table class="pv"><tr><th>${T("factory")}</th><th>#</th><th>${T("plan")}</th><th>${T("act")}</th><th>${T("rate")}</th></tr>${FAC.filter(k=>P[k].n).map(k=>{const v=P[k],r=v.plan?v.act/v.plan*100:null;return`<tr><td>${esc(lab(k))}</td><td style="text-align:right">${v.n}</td><td style="text-align:right">${fmt(v.plan)}</td><td style="text-align:right">${fmt(v.act)}</td><td style="text-align:right;font-weight:700" class="${rateCls(r)}">${r===null?"–":r.toFixed(1)+"%"}</td></tr>`}).join("")}</table>`};
+  const r=await modal({title:T("prodTitle"),width:620,body:`<div class="note" style="margin:0 0 10px">${T("file")}: <b>${esc(fileName)}</b> · ${esc(T("nDays",{n:ds.length}))} · ${esc(T("rowsN",{n:recs.length}))}</div>
+    <label class="fld"><span>${T("dataDate")}</span><select name="date" id="pdDate">${ds.map(d=>{const c=of(d),pl=c.reduce((a,x)=>a+x.plan,0),ac=c.reduce((a,x)=>a+x.act,0);return`<option value="${d}"${d===def?" selected":""}>${esc(fmtDayLong(d))} — ${fmt(ac)}/${fmt(pl)} (${pl?(ac/pl*100).toFixed(1):0}%)</option>`}).join("")}</select></label>
+    <div id="pdPrev" style="margin-bottom:12px">${preview(def,rules)}</div><div class="fld" id="pdTg">${tgHTML(def)}</div>
+    ${ds.length>1?`<label class="radio"><input type="checkbox" name="all" value="1" id="pdAll"><span>${esc(T("allDays",{n:ds.length}))}</span></label>`:""}
+    <label class="fld" style="margin-top:10px"><span>${esc(T("prodRules"))}</span>${rulesTA("rules",rules)}</label><div class="note">${esc(T("keepNote"))}</div>`,
+    actions:[{v:"no",label:T("cancel")},{v:"ok",label:T("apply"),cls:"pri"}],
+    onMount:m=>{const sel=m.querySelector("#pdDate"),ta=m.querySelector("[name=rules]"),all=m.querySelector("#pdAll"),upd=()=>m.querySelector("#pdPrev").innerHTML=preview(sel.value,readRules(ta.value));
+      sel.addEventListener("change",()=>{upd();m.querySelector("#pdTg").innerHTML=tgHTML(sel.value)});ta.addEventListener("input",upd);if(all)all.addEventListener("change",()=>m.querySelector("#pdTg").style.opacity=all.checked?.4:1)}});
+  if(r.v!=="ok")return false;
+  rules=readRules(r.data.rules);S.settings.plant3=rules;
+  const plan=r.data.all==="1"?ds.map(d=>[d,d]):[[r.data.date||def,r.data.tg||r.data.date||def]];
+  plan.forEach(([d,tg])=>{if(!S.days[tg])S.days[tg]=makeDay(tg);applyProd(S.days[tg],prodSum(of(d),rules),fileName,d)});
+  S.cur=plan[plan.length-1][1];rep.push(r.data.all==="1"?T("prodMulti",{n:plan.length}):T("prodDone",{p:fmtDayLong(plan[0][0]),t:fmtDayLong(plan[0][1])}));return true}
+
+/* ---- STOP LINE report → 03 ---- */
+function findStop(wb){for(const n of wb.SheetNames){const rows=grid(wb,n);for(let i=0;i<Math.min(20,rows.length);i++){const h=rows[i].map(x=>String(x).replace(/\s+/g," ").trim()),col=re=>h.findIndex(x=>re.test(x)),c={date:col(/날짜|^ngày/i),model:col(/모델|model/i),item:col(/^i[n]?tem/i),code:col(/코트|코드|code/i),mach:col(/품목명|máy/i),stop:col(/정지|dừng lại/i),start:col(/재가동|hoạt động lại/i),loss:col(/유실|thất thoát/i),resp:col(/귀책|quy trách/i)};if(c.date>=0&&c.stop>=0&&c.start>=0&&(c.loss>=0||c.mach>=0))return{rows,hi:i,c}}}return null}
+function stopRecs(ss,fn){const g=(r,k)=>ss.c[k]>=0?r[ss.c[k]]:"",raw=ss.rows.slice(ss.hi+1).filter(r=>String(g(r,"mach")).trim()||num(g(r,"loss"))),yrs={};
+  raw.forEach(r=>{const v=g(r,"date");if(typeof v==="number"&&v>30000){const y=ser(v).slice(0,4);yrs[y]=(yrs[y]||0)+1}});
+  const fy=(String(fn).match(/(20\d{2})/)||[])[1],year=Object.entries(yrs).sort((a,b)=>b[1]-a[1]).map(x=>x[0])[0]||fy||String(new Date().getFullYear());
+  const dd=v=>{if(typeof v==="number"){const s=ser(v);return v<30000?year+s.slice(4):s}const t=String(v).trim();let m;if(m=t.match(/^(\d{1,2})[\/.-](\d{1,2})$/))return`${year}-${pad(m[2])}-${pad(m[1])}`;return toD(t)};
+  return raw.map(r=>{const st=g(r,"stop"),en=g(r,"start");let min=num(g(r,"loss"));if(!min&&typeof st==="number"&&typeof en==="number"){let d=(en%1)-(st%1);if(d<0)d+=1;min=d*1440}
+    return{date:dd(g(r,"date")),model:String(g(r,"model")).trim(),item:String(g(r,"item")).trim(),code:String(g(r,"code")).trim(),mach:String(g(r,"mach")).replace(/\s+/g," ").trim(),start:toT(st),end:toT(en),min:Math.round(min),resp:String(g(r,"resp")).replace(/\s+/g," ").trim()}}).filter(r=>r.date)}
+function stopPlant(r,rules){const hay=NORM(r.model+" "+r.item);for(const l of rules){const[k,p]=l.split("=>").map(x=>x&&x.trim());if(k&&p&&NORM(k).split(" ").every(t=>hay.replace(/\s+/g,"").includes(t)||hay.includes(t)))return p}return"1공장"}
+function stopGroups(recs,rules){const G={};recs.forEach(r=>{const key=[NORM(r.model).replace(/\s/g,""),NORM(r.item).replace(/\s/g,""),NORM(r.code),NORM(r.mach).replace(/\s/g,"")].join("|"),g=G[key]=G[key]||{key,plant:stopPlant(r,rules),model:r.model,item:r.item,code:r.code,mach:r.mach,resp:new Set(),min:0,n:0,st:[],en:[]};g.min+=r.min;g.n++;if(r.start)g.st.push(r.start);if(r.end)g.en.push(r.end);if(r.resp)g.resp.add(r.resp)});return Object.values(G).sort((a,b)=>b.min-a.min)}
+function applyStop(D,gs,file,sd){const keep={};live(D.e).forEach(r=>{if(r._k)keep[r._k]=r});
+  D.e=gs.map(g=>{const o=keep[g.key]||{},cause=g.mach+(g.n>1?` (×${g.n})`:""),pic=[...g.resp].join(", ");
+    return{f:/^\d공장$/.test(g.plant)?g.plant:"",eq:[g.model,g.item].filter(Boolean).join(" ")+(g.code?" · "+g.code:""),s:g.st.slice().sort()[0]||"",r:g.en.slice().sort().pop()||"",h:String(Math.round(g.min/60*100)/100),cnt:String(g.n),_k:g.key,cause:o.cause&&o.cause!==o.causeA?o.cause:cause,causeA:cause,pic:o.pic&&o.pic!==o.picA?o.pic:pic,picA:pic}});
+  D.stopSrc={file,date:sd,at:Date.now()}}
+async function importStops(ss,fileName,rep){
+  const recs=stopRecs(ss,fileName);if(!recs.length){toast(T("stopNone"),"err");return false}
+  const ds=[...new Set(recs.map(r=>r.date))].sort(),def=ds.includes(S.cur)?S.cur:ds[ds.length-1],of=d=>recs.filter(r=>r.date===d);
+  let rules=S.settings.stopRules||STOPR_DEFAULT;
+  const preview=(d,rl)=>{const gs=stopGroups(of(d),rl),tm=gs.reduce((a,g)=>a+g.min,0),tn=gs.reduce((a,g)=>a+g.n,0);
+    return`<table class="pv"><tr><th>${T("factory")}</th><th>${T("eq")}</th><th>${T("stopH")}</th><th>${T("stopCause")}</th><th>${T("pic")}</th></tr>${gs.map(g=>`<tr><td>${esc(lab(g.plant))}</td><td>${esc([g.model,g.item].filter(Boolean).join(" "))}${g.code?" · "+esc(g.code):""}</td><td style="text-align:right">${Math.round(g.min/60*100)/100}h</td><td>${esc(g.mach)}${g.n>1?` <b>×${g.n}</b>`:""}</td><td>${esc([...g.resp].join(", "))}</td></tr>`).join("")}</table><div class="note" style="text-align:right;margin-top:4px"><b>${esc(T("stopTotal",{h:Math.round(tm/60*100)/100,m:tm,n:tn}))}</b></div>`};
+  const r=await modal({title:T("stopTitle"),width:780,body:`<div class="note" style="margin:0 0 10px">${T("file")}: <b>${esc(fileName)}</b> · ${esc(T("nDays",{n:ds.length}))} · ${recs.length} STOP</div>
+    <label class="fld"><span>${T("dataDate")}</span><select name="date" id="stDate">${ds.map(d=>{const c=of(d);return`<option value="${d}"${d===def?" selected":""}>${esc(fmtDayLong(d))} — ${c.length}× · ${c.reduce((a,x)=>a+x.min,0)}′</option>`}).join("")}</select></label>
+    <div id="stPrev" style="margin-bottom:12px;max-height:38vh;overflow:auto">${preview(def,rules)}</div><div class="fld" id="stTg">${tgHTML(def)}</div>
+    ${ds.length>1?`<label class="radio"><input type="checkbox" name="all" value="1" id="stAll"><span>${esc(T("allDays",{n:ds.length}))}</span></label>`:""}
+    <label class="fld" style="margin-top:10px"><span>${esc(T("stopRules"))}</span>${rulesTA("rules",rules)}</label><div class="note">${esc(T("keepNote"))}</div>`,
+    actions:[{v:"no",label:T("cancel")},{v:"ok",label:T("apply"),cls:"pri"}],
+    onMount:m=>{const sel=m.querySelector("#stDate"),ta=m.querySelector("[name=rules]"),all=m.querySelector("#stAll"),upd=()=>m.querySelector("#stPrev").innerHTML=preview(sel.value,readRules(ta.value));
+      sel.addEventListener("change",()=>{upd();m.querySelector("#stTg").innerHTML=tgHTML(sel.value)});ta.addEventListener("input",upd);if(all)all.addEventListener("change",()=>m.querySelector("#stTg").style.opacity=all.checked?.4:1)}});
+  if(r.v!=="ok")return false;
+  rules=readRules(r.data.rules);S.settings.stopRules=rules;
+  const plan=r.data.all==="1"?ds.map(d=>[d,d]):[[r.data.date||def,r.data.tg||r.data.date||def]];
+  plan.forEach(([d,tg])=>{if(!S.days[tg])S.days[tg]=makeDay(tg);applyStop(S.days[tg],stopGroups(of(d),rules),fileName,d)});
+  S.cur=plan[plan.length-1][1];rep.push(r.data.all==="1"?T("stopMulti",{n:plan.length}):T("stopDone",{p:fmtDayLong(plan[0][0]),n:of(plan[0][0]).length,t:fmtDayLong(plan[0][1])}));return true}
+
+/* ---- section 04 shipping table: Excel file or photo ---- */
+/* ---- section 04 from a picture of the shipping table: grid detection + per-cell OCR ---- */
+const TJS="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+const TOPT={workerPath:"https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js",corePath:"https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1",langPath:"https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng@1.0.0/4.0.0_best_int",gzip:true};
+const loadImg=blob=>new Promise((res,rej)=>{const u=URL.createObjectURL(blob),i=new Image();i.onload=()=>{URL.revokeObjectURL(u);res(i)};i.onerror=()=>{URL.revokeObjectURL(u);rej(new Error("image"))};i.src=u});
+function binarize(img){
+  const k=Math.max(1,Math.min(3,2200/img.naturalWidth)),W=Math.round(img.naturalWidth*k),H=Math.round(img.naturalHeight*k);
+  const c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d",{willReadFrequently:true});
+  x.fillStyle="#fff";x.fillRect(0,0,W,H);x.imageSmoothingQuality="high";x.drawImage(img,0,0,W,H);
+  const d=x.getImageData(0,0,W,H),p=d.data,B=new Uint8Array(W*H);
+  for(let i=0;i<W*H;i++){const r=p[i*4],g=p[i*4+1],b=p[i*4+2],l=.299*r+.587*g+.114*b,red=r>140&&g<110&&b<110;B[i]=(l<150||red)?1:0}
+  return{c,x,W,H,B,k};
+}
+function findLines(bm){const{W,H,B}=bm,hr=[],vr=[];
+  for(let y=0;y<H;y++){let run=0,best=0;for(let x=0;x<W;x++){run=B[y*W+x]?run+1:0;if(run>best)best=run}if(best>W*.45)hr.push(y)}
+  const grp=a=>{const g=[];a.forEach(v=>{const l=g[g.length-1];if(l&&v-l[l.length-1]<=3)l.push(v);else g.push([v])});return g.map(l=>({a:l[0],b:l[l.length-1],m:Math.round((l[0]+l[l.length-1])/2)}))};
+  const H1=grp(hr);if(H1.length<3)return null;const top=H1[0].a,bot=H1[H1.length-1].b,TH=bot-top;
+  for(let x=0;x<W;x++){let run=0,best=0;for(let y=top;y<=bot;y++){run=B[y*W+x]?run+1:0;if(run>best)best=run}if(best>TH*.45)vr.push(x)}
+  const V1=grp(vr);if(V1.length<3)return null;return{H:H1,V:V1}}
+function cleanLines(bm,L){const{W,H,B}=bm;const N=new Uint8Array(B);
+  L.H.forEach(l=>{for(let y=Math.max(0,l.a-1);y<=Math.min(H-1,l.b+1);y++)for(let x=0;x<W;x++)N[y*W+x]=0});
+  L.V.forEach(l=>{for(let x=Math.max(0,l.a-1);x<=Math.min(W-1,l.b+1);x++)for(let y=0;y<H;y++)N[y*W+x]=0});
+  const c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d"),d=x.createImageData(W,H);
+  for(let i=0;i<W*H;i++){const v=N[i]?0:255;d.data[i*4]=d.data[i*4+1]=d.data[i*4+2]=v;d.data[i*4+3]=255}x.putImageData(d,0,0);return{canvas:c,N}}
+const ink=(N,W,r)=>{let n=0;for(let y=r.top;y<r.top+r.height;y++)for(let x=r.left;x<r.left+r.width;x++)n+=N[y*W+x];return n};
+const tight=(N,W,r,pd=8)=>{let x0=1e9,y0=1e9,x1=-1,y1=-1;for(let y=r.top;y<r.top+r.height;y++)for(let x=r.left;x<r.left+r.width;x++)if(N[y*W+x]){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+  if(x1<0)return r;return{left:Math.max(0,x0-pd),top:Math.max(0,y0-pd),width:x1-x0+1+2*pd,height:y1-y0+1+2*pd}};
+const borderAt=(bm,y,x0,x1)=>{let n=0;for(let x=x0;x<=x1;x++){let on=0;for(let dy=-2;dy<=2;dy++)on|=bm.B[(y+dy)*bm.W+x];n+=on}return n/(x1-x0+1)>.6};
+async function ocrShipImage(blob,onProg){
+  if(!window.Tesseract&&!await new Promise(r=>{const x=document.createElement("script");x.src=TJS;x.onload=()=>r(!!window.Tesseract);x.onerror=()=>r(false);document.head.appendChild(x)}))return null;
+  const img=await loadImg(blob),bm=binarize(img),L=findLines(bm);
+  const worker=await Tesseract.createWorker("eng",1,TOPT);
+  try{
+    if(!L){await worker.setParameters({tessedit_pageseg_mode:"6"});const r=await worker.recognize(bm.c);return parseShipText(r.data.text)}
+    const{canvas,N}=cleanLines(bm,L),rowsY=[],colsX=[];
+    for(let i=0;i<L.H.length-1;i++)rowsY.push([L.H[i].b+1,L.H[i+1].a-1]);for(let i=0;i<L.V.length-1;i++)colsX.push([L.V[i].b+1,L.V[i+1].a-1]);
+    const rect=(r,c,r2=r)=>{const pd=3,top=rowsY[r][0]+pd,left=colsX[c][0]+pd;return{top,left,width:Math.max(4,colsX[c][1]-colsX[c][0]-2*pd),height:Math.max(4,rowsY[r2][1]-rowsY[r][0]-2*pd)}};
+    const has=r=>ink(N,bm.W,r)>Math.max(12,r.width*r.height*.004),rd=async re=>(await worker.recognize(canvas,{rectangle:tight(N,bm.W,re)})).data.text;
+    const nC=colsX.length,nR=rowsY.length;
+    // column roles from the header row (fallback: standard order)
+    const roles=["item","name","plan","act","diff","rate","note"].slice(0,nC);
+    // merged item cells: no horizontal border inside the item column
+    const itemSpan=[];for(let r=1;r<nR;r++){let r2=r;while(r2+1<nR&&!borderAt(bm,L.H[r2+1].m,colsX[0][0]+4,colsX[0][1]-4))r2++;for(let q=r;q<=r2;q++)itemSpan[q]=[r,r2];r=r2}
+    const out=[],jobs=[];
+    for(let r=1;r<nR;r++)out.push({});
+    // text columns
+    await worker.setParameters({tessedit_pageseg_mode:"7",tessedit_char_whitelist:"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789()-_ "});
+    const tot=(nR-1)*4;let done=0;const tick=()=>onProg&&onProg(++done/tot);
+    for(let r=1;r<nR;r++){
+      const [a,b]=itemSpan[r];if(a===r){const re=rect(a,0,b);let v="";if(has(re))v=(await rd(re)).trim();for(let q=a;q<=b;q++)out[q-1].item=v}tick();
+      const re=rect(r,1);out[r-1].name=has(re)?(await rd(re)).trim():"";tick()}
+    await worker.setParameters({tessedit_pageseg_mode:"7",tessedit_char_whitelist:"0123456789,.()-"});
+    for(let r=1;r<nR;r++)for(const [ci,key] of [[2,"plan"],[3,"act"]]){const re=rect(r,ci);let v="";
+      if(has(re)){const t=(await rd(re)).replace(/\s/g,"");const d=t.replace(/[^0-9]/g,"");v=d&&d.length>=1&&!/^-+$/.test(t)?String(+d):""}out[r-1][key]=v;tick()}
+    // date above the table (e.g. "10/30")
+    let date="";if(L.H[0].a>20){const zr={left:0,top:0,width:bm.W,height:L.H[0].a-3};if(ink(bm.B,bm.W,zr)>10){await worker.setParameters({tessedit_pageseg_mode:"7",tessedit_char_whitelist:"0123456789/.-"});
+      const t=(await worker.recognize(bm.c,{rectangle:tight(bm.B,bm.W,zr,10)})).data.text;const m=t.match(/(\d{1,2})\s*[\/.-]\s*(\d{1,2})/);if(m&&+m[1]>=1&&+m[1]<=12&&+m[2]>=1&&+m[2]<=31)date=`${pad(m[1])}-${pad(m[2])}`}}
+    let rows=out.filter(r=>!/^T[O0]T|TOTAL|OTAL/i.test(String(r.item).replace(/\s/g,""))).map(r=>({item:normItem(r.item),name:normName(r.name),plan:r.plan,act:r.act})).filter(r=>r.item||r.name||r.plan||r.act);
+    const lr=rows[rows.length-1];if(lr&&rows.length>2){const sp=rows.slice(0,-1).reduce((a,x)=>a+num(x.plan),0),sa=rows.slice(0,-1).reduce((a,x)=>a+num(x.act),0);if(num(lr.plan)===sp&&num(lr.act)===sa)rows.pop()}
+    return{rows,mmdd:date}
+  }finally{await worker.terminate()}
+}
+const normName=s=>{s=String(s||"").toUpperCase().replace(/[^A-Z]/g,"");const k=["FRONT","REAR","SUB","CAM"].find(x=>s===x||(s.length>=3&&(x.startsWith(s.slice(0,3))||s.includes(x))));return k||s};
+const lev=(a,b)=>{const m=a.length,n=b.length,d=[...Array(n+1).keys()];for(let i=1;i<=m;i++){let p=d[0];d[0]=i;for(let j=1;j<=n;j++){const t=d[j];d[j]=Math.min(d[j]+1,d[j-1]+1,p+(a[i-1]===b[j-1]?0:1));p=t}}return d[n]};
+const normItem=raw=>{let s=String(raw||"").toUpperCase().replace(/\s+/g,"");if(!s)return"";
+  const fixed=s.replace(/^(SM-)?([A-Z])([^(]*)/,(m,sm,a,rest)=>(sm||"")+a+rest.replace(/[OD]/g,"0").replace(/[IL|]/g,"1").replace(/S/g,"5").replace(/B/g,"8").replace(/Z/g,"2").replace(/U$/,"U"));
+  const known=[...new Set(SHIP_LIST.map(x=>x[0]).concat(...Object.values(S.days).map(D=>(D.s||[]).map(r=>String(r.item||"").toUpperCase()))))].filter(Boolean);
+  for(const c of [s,fixed])if(known.includes(c))return c;
+  let best=null,bd=99,tie=false;known.forEach(k=>{const v=Math.min(lev(s,k),lev(fixed,k));if(v<bd){bd=v;best=k;tie=false}else if(v===bd)tie=true});
+  return best&&!tie&&bd<=Math.max(1,Math.floor(best.length*.25))?best:fixed};
+function parseShipText(text){const rows=[];let last="";let mmdd="";
+  String(text).split("\n").forEach(line=>{const m0=line.match(/(\d{1,2})\s*\/\s*(\d{1,2})/);if(!rows.length&&m0&&!mmdd)mmdd=`${pad(m0[1])}-${pad(m0[2])}`;
+    const t=line.toUpperCase();const nm=(t.match(/\b(FRONT|REAR|SUB|CAM)\b/)||[])[1];if(!nm)return;
+    const im=t.match(/((SM-)?[A-Z]\d{3}[A-Z]?(\([A-Z0-9]+\))?)/);const item=im?normItem(im[1]):last;last=item;
+    const after=t.slice(t.indexOf(nm)+nm.length).replace(/\d+(\.\d+)?%/g,"");const nums=(after.match(/\(?[\d,]+\)?|-/g)||[]).map(x=>x==="-"?"":x.startsWith("(")?"":x.replace(/,/g,""));
+    let plan="",act="";const real=(after.match(/[\d,]+|-/g)||[]).map(x=>x==="-"?"":x.replace(/,/g,""));
+    if(real.length>=3){plan=real[0];act=real[1]}else if(real.length===2){if(real[0]===real[1]){act=real[0]}else{plan=real[0];act=real[1]}}else if(real.length===1)act=real[0];
+    rows.push({item,name:nm,plan,act})});
+  return{rows,mmdd}}
+
+function findShip(wb){const out=[];
+  for(const n of wb.SheetNames){const rows=grid(wb,n);let hi=-1,c={};
+    for(let i=0;i<Math.min(25,rows.length);i++){const h=rows[i].map(x=>String(x).replace(/\s+/g,"").trim()),f=re=>h.findIndex(x=>re.test(x));
+      const cc={item:f(/^품목$|^mãhàng$|^item$/i),name:f(/^품명$|^tênhàng$|^part$/i),plan:f(/^계획$|^kếhoạch$|^plan$/i),act:f(/^실적$|^kếtquả$|^actual$/i),note:f(/^비고$|^ghichú$|^remarks?$/i)};
+      if(cc.item>=0&&cc.plan>=0&&cc.act>=0){hi=i;c=cc;break}}
+    if(hi<0)continue;
+    let mmdd="",date="";for(let i=0;i<hi;i++)for(const v of rows[i]){if(date||mmdd)break;if(typeof v==="number"&&v>40000&&v<60000)date=ser(v);else{const t=String(v).trim();let m;if(m=t.match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})/))date=`${m[1]}-${pad(m[2])}-${pad(m[3])}`;else if(m=t.match(/^(\d{1,2})\s*[\/.-]\s*(\d{1,2})$/))mmdd=`${pad(m[1])}-${pad(m[2])}`}}
+    if(!date&&!mmdd){const m=n.match(/(\d{1,2})[\/.-](\d{1,2})/)||n.match(/^(\d{2})(\d{2})$/);if(m)mmdd=`${pad(m[1])}-${pad(m[2])}`}
+    const val=v=>{if(v==null)return"";if(typeof v==="number")return String(v);const t=String(v).replace(/,/g,"").trim();return/^-?\d+(\.\d+)?$/.test(t)?t:""};
+    const R=[];let last="";
+    for(const r of rows.slice(hi+1)){const it=String(r[c.item]??"").trim().replace(/^[-–]$/,""),nm=c.name>=0?String(r[c.name]??"").trim():"";
+      if(/^TOTAL|^합계|^TỔNG/i.test(it)||/^TOTAL|^합계/i.test(nm))break;
+      if(!it&&!nm&&!val(r[c.plan])&&!val(r[c.act]))continue;
+      const item=it||last;last=item;R.push({item,name:nm,plan:val(r[c.plan]),act:val(r[c.act]),note:c.note>=0?String(r[c.note]??"").trim():""})}
+    if(R.length)out.push({sheet:n,rows:R,date,mmdd})}
+  return out}
+const resolveMMDD=mmdd=>{if(!mmdd)return"";const y=+S.cur.slice(0,4);let d=`${y}-${mmdd}`;if(d>addDays(S.cur,200))d=`${y-1}-${mmdd}`;return d};
+async function shipPreview(res,src,isOcr){
+  const det=res.date||resolveMMDD(res.mmdd);const R=res.rows.map(r=>({...r}));
+  const opts=[];if(det)opts.push(["File",det]);if(!opts.find(o=>o[1]===S.cur))opts.push(["Cur",S.cur]);
+  const tbl=()=>`<table class="sp-tbl"><tr><th>${T("item")}</th><th>${T("pname")}</th><th>${T("sPlan")}</th><th>${T("sAct")}</th><th>${T("diff")}</th><th>${T("rateS")}</th></tr>${R.map((r,i)=>`<tr>
+      <td class="c"><input data-sp="${i}" data-f="item" value="${esc(r.item)}"></td><td class="c"><input data-sp="${i}" data-f="name" value="${esc(r.name)}"></td>
+      <td><input class="n" data-sp="${i}" data-f="plan" placeholder="-" value="${esc(fmtNum(r.plan))}"></td><td><input class="n" data-sp="${i}" data-f="act" placeholder="-" value="${esc(fmtNum(r.act))}"></td>
+      <td class="g" id="spd${i}"></td><td class="g" id="spr${i}"></td></tr>`).join("")}<tr class="t"><td colspan="2" style="text-align:center">TOTAL</td><td id="spTp"></td><td id="spTa"></td><td id="spTd"></td><td id="spTr"></td></tr></table>`;
+  const upd=m=>{let sp=0,sa=0;R.forEach((r,i)=>{const p=num(r.plan),a=num(r.act),blank=!String(r.plan).trim()&&!String(r.act).trim(),df=a-p;sp+=p;sa+=a;
+      const d=m.querySelector("#spd"+i),q=m.querySelector("#spr"+i);d.textContent=blank||!df?"-":df<0?`(${fmt(-df)})`:fmt(df);d.className="g"+(!blank&&df<0?" neg":"");q.textContent=p?(a/p*100).toFixed(1)+"%":"";q.className="g"+(p&&a<p?" neg":"")});
+    const df=sa-sp;m.querySelector("#spTp").textContent=fmt(sp);m.querySelector("#spTa").textContent=fmt(sa);const d=m.querySelector("#spTd");d.textContent=!df?"-":df<0?`(${fmt(-df)})`:fmt(df);d.className=df<0?"neg":"";const q=m.querySelector("#spTr");q.textContent=sp?(sa/sp*100).toFixed(1)+"%":"";q.className=sp&&sa<sp?"neg":""};
+  const r=await modal({title:T("shipTitle"),width:760,body:`<div class="note" style="margin:0 0 10px">${T("file")}: <b>${esc(src)}</b><br>${esc(T(isOcr?"shipOcrNote":"shipXlsNote"))}</div>
+      <div style="max-height:46vh;overflow:auto;margin-bottom:12px">${tbl()}</div>
+      <div class="fld"><span>${esc(T("target"))}</span>${opts.map(([k,d],i)=>`<label class="radio"><input type="radio" name="tg" value="${d}"${i===0?" checked":""}><span>${esc(T("tg"+k,{d:fmtDayLong(d)}))}${S.days[d]?"":" ✚"}</span></label>`).join("")}</div>`,
+    actions:[{v:"no",label:T("cancel")},{v:"ok",label:T("apply"),cls:"pri"}],
+    onMount:m=>{upd(m);m.querySelector(".sp-tbl").addEventListener("input",e=>{const t=e.target,i=+t.dataset.sp;if(isNaN(i))return;R[i][t.dataset.f]=/plan|act/.test(t.dataset.f)?t.value.replace(/,/g,"").trim():t.value;upd(m)})}});
+  if(r.v!=="ok")return null;
+  const tg=r.data.tg||det||S.cur;if(!S.days[tg])S.days[tg]=makeDay(tg);const D=S.days[tg],old=live(D.s);
+  D.s=R.filter(x=>x.item||x.name||x.plan||x.act).map(x=>{const o=old.find(q=>String(q.item).trim()===String(x.item).trim()&&String(q.name).trim()===String(x.name).trim())||{};return{item:x.item,name:x.name,plan:x.plan,act:x.act,note:x.note||o.note||""}});
+  D.shipSrc={file:src,at:Date.now()};S.cur=tg;return{n:D.s.length,d:tg}}
+let ocrToast=null;
+function progToast(p){if(!ocrToast){ocrToast=document.createElement("div");ocrToast.className="toast prog-toast";ocrToast.innerHTML=`<span></span><div class="pb"><i></i></div>`;$("toasts").appendChild(ocrToast)}
+  ocrToast.querySelector("span").textContent=T("shipOcr",{p:Math.round(p*100)});ocrToast.querySelector("i").style.width=Math.round(p*100)+"%"}
+async function importShipImage(f,rep){progToast(0);let res=null;
+  try{res=await ocrShipImage(f,p=>progToast(p))}catch(e){console.error(e)}finally{if(ocrToast){ocrToast.remove();ocrToast=null}}
+  if(res===null){toast(T("ocrFail"),"err");return false}
+  if(!res.rows.length){toast(T("shipNone",{f:f.name||"image"}),"err");return false}
+  const done=await shipPreview(res,f.name||"image",true);if(done)rep.push(T("shipDone",{n:done.n,d:fmtDayLong(done.d)}));return!!done}
+const isImg=f=>/^image\//.test(f.type)||/\.(png|jpe?g|bmp|gif|webp)$/i.test(f.name||"");
+
+/* ---- original Excel template (조립팀 일일보고 / 개선과제 관리) ---- */
+function importTemplate(wb,rep){let any=false;
+  for(const n of wb.SheetNames){const ws=wb.Sheets[n],v=a=>{const c=ws[a];return c?c.v:undefined},str=a=>{const x=v(a);return x==null?"":String(x)};
+    const conv=(x,t)=>t==="n"?String(x):t==="d"?toD(x):t==="t"?toT(x):t==="pct"?String(typeof x==="number"&&x<=1?Math.round(x*1000)/10:x):t==="r"?(typeof x==="number"&&x<=1.5?(x*100).toFixed(1)+"%":String(x)):String(x);
+    const rowsOf=(r0,r1,map)=>{const out=[];for(let r=r0;r<=r1;r++){const o={};Object.entries(map).forEach(([f,[col,t]])=>{const x=v(col+r);if(x!==undefined&&x!=="")o[f]=conv(x,t)});const ks=Object.keys(o);if(ks.length&&!(ks.length===1&&ks[0]==="f"))out.push(o)}return out};
+    if(/일일보고|daily/i.test(n)||["공장","Xưởng","Plant"].includes(str("B6").trim())){
+      let date=toD(v("C3"));if(!date){date=S.cur;toast(T("noDateCur",{d:fmtDayLong(date)}))}
+      const D={basis:str("L3")||BASIS[0],writer:str("F3"),checker:str("I3"),issue:str("B53"),support:str("H53")};
+      D.p=/계획|kế hoạch|plan/i.test(str("C6"))?rowsOf(7,10,{f:["B"],plan:["C","n"],act:["D","n"],item:["F"]}):rowsOf(7,10,{f:["B"],item:["C"],plan:["E","n"],act:["F","n"],rsn:["H"],rdt:["K"]});
+      D.q=rowsOf(15,19,{f:["B"],type:["C"],model:["D"],n:["E","n"],ng:["F","n"],def:["H"],act:["J"],pic:["M"]});
+      D.e=rowsOf(23,27,{f:["B"],eq:["C"],s:["E","t"],r:["F","t"],h:["G","n"],cause:["H"],pic:["L"]});
+      D.s=rowsOf(31,34,{item:["C"],plan:["D","n"],act:["E","n"],note:["G"]});if(!D.s.length)D.s=SHIP_LIST.map(([item,name])=>({item,name}));
+      D.n=rowsOf(38,43,{m:["B"],l:["C"],p:["D"],st:["E"],plan:["F"],x:["J"]});
+      D.w=rowsOf(47,49,{f:["C"],m:["D"],type:["E"],qty:["F","n"],rate:["G","r"],cause:["H"],fix:["J"],pic:["L"],due:["M","d"]});
+      S.days[date]=D;S.cur=date;rep.push(T("iTpl")+" "+fmtDayLong(date));any=true;continue}
+    if(/개선과제|improve|cải tiến/i.test(n)||["번호","STT","No."].includes(str("A4").trim())){
+      S.tasks=rowsOf(5,24,{cat:["B"],line:["C"],name:["D"],prob:["E"],fix:["F"],pic:["G"],due:["H","d"],pct:["I","pct"],st:["J"]});rep.push(T("iTasks"));any=true}}
+  return any}
+
+/* ---- DATA sheet written by "Export Excel" (JSON rows; older key/value rows also accepted) ---- */
+function importData(wb,rep){const rows=grid(wb,"DATA").slice(1);let n=0;const flat={days:{},tasks:{}};
+  rows.forEach(([d,k,v])=>{if(!k)return;k=String(k);
+    if(k==="JSON"){try{const o=JSON.parse(v);if(d==="TASKS")S.tasks=o;else{S.days[toD(d)||d]=o;S.cur=toD(d)||d;n++}}catch(e){}return}
+    if(d==="TASKS"){flat.tasks[k]=String(v);return}const ds=toD(d);if(!ds)return;(flat.days[ds]=flat.days[ds]||{})[k]=String(v).startsWith("JSON:")?(()=>{try{return JSON.parse(String(v).slice(5))}catch(e){return v}})():String(v)});
+  if(Object.keys(flat.days).length||Object.keys(flat.tasks).length){const c=fromV2(flat);Object.assign(S.days,c.days);if(c.tasks.length)S.tasks=c.tasks;const ks=Object.keys(c.days).sort();if(ks.length)S.cur=ks.pop();n+=Object.keys(c.days).length}
+  rep.push(T("iData")+` (${n})`);return n>0}
+
+async function readWB(f){const buf=await f.arrayBuffer();
+  if(/\.(csv|txt)$/i.test(f.name)){let text;try{text=new TextDecoder("utf-8",{fatal:true}).decode(buf)}catch(e){try{text=new TextDecoder("euc-kr").decode(buf)}catch(e2){text=new TextDecoder().decode(buf)}}return XLSX.read(text.replace(/^\uFEFF/,""),{type:"string",raw:true})}
+  return XLSX.read(buf,{type:"array"})}
+async function importFiles(files,shipOnly=false){
+  if(!files.length)return;const imgs=files.filter(isImg),docs=files.filter(f=>!isImg(f));
+  if(docs.length&&!await lib("XLSX",XJS))return;
+  await snapshot("v_imp");const rep=[];let ok=false;
+  for(const f of imgs){if(await importShipImage(f,rep))ok=true}
+  for(const f of docs){try{const wb=await readWB(f);
+      if(shipOnly){const sh=findShip(wb);if(!sh.length){rep.push(T("shipNone",{f:f.name}));continue}for(const x of sh){const d=await shipPreview(x,f.name+(sh.length>1?" · "+x.sheet:""),false);if(d){rep.push(T("shipDone",{n:d.n,d:fmtDayLong(d.d)}));ok=true}}continue}
+      if(wb.SheetNames.includes("DATA")){if(importData(wb,rep))ok=true;continue}
+      const ps=findProd(wb);if(ps){if(await importProduction(ps,f.name,rep))ok=true;continue}
+      const ss=findStop(wb);if(ss){if(await importStops(ss,f.name,rep))ok=true;continue}
+      const sh=findShip(wb);if(sh.length){for(const x of sh){const d=await shipPreview(x,f.name+(sh.length>1?" · "+x.sheet:""),false);if(d){rep.push(T("shipDone",{n:d.n,d:fmtDayLong(d.d)}));ok=true}}continue}
+      if(importTemplate(wb,rep))ok=true;else rep.push(`${f.name}: ${T("unk")}`)}
+    catch(e){console.error(e);toast(T("readFail",{f:f.name}),"err")}}
+  if(ok){tab="r";persist();render()}
+  if(rep.length)toast(T("imported",{list:rep.join(" · ")}),ok?"ok":"err")}
+
+/* =====================================================================
+   8. EXPORT EXCEL (formatted like the page)
+   ===================================================================== */
+const NAVY="FF172B3A",YEL="FFFFF5DE",GRY="FFEEF2F4",MINT="FFE9F5F3",LN={style:"thin",color:{argb:"FFC9D6DC"}},BD={top:LN,bottom:LN,left:LN,right:LN};
+const SP={p:[1,2,1,1,1,3,3],q:[1,1,1,1,1,1,2,3,1],e:[1,2,1,1,1,1,3,2],s:[2,1,1,1,1,1,5],n:[2,1,2,2,3,2],w:[1,1,1,1,1,1,2,2,1,1],k:[1,1,1,1,2,2,1,1,1,1]};
+const NF={p:{plan:"#,##0",act:"#,##0"},q:{n:"#,##0",ng:"#,##0"},e:{h:"0.00",cnt:"0"},s:{plan:"#,##0",act:"#,##0"},w:{qty:"#,##0"},k:{pct:"0"}},RATE={p:["act","plan","0.0%"],q:["ng","n","0.00%"],s:["act","plan","0.0%"]};
+const CL=n=>{let s="";while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=Math.floor((n-1)/26)}return s};
+function put(ws,r,c,span,val,o={}){const cell=ws.getCell(r,c);if(span>1)ws.mergeCells(r,c,r,c+span-1);cell.value=val;cell.font={name:"Malgun Gothic",size:o.size||10,bold:!!o.bold,color:{argb:o.color||"FF1F2933"}};cell.alignment={vertical:o.v||"middle",horizontal:o.h||"left",wrapText:true};if(o.fill)cell.fill={type:"pattern",pattern:"solid",fgColor:{argb:o.fill}};if(o.nf)cell.numFmt=o.nf;for(let i=0;i<span;i++)ws.getCell(r,c+i).border=BD}
+function secX(ws,r,s,R,sum){const d=SEC[s],sp=SP[s],pos={};put(ws,r,2,12,(d.no?d.no+"  ":"")+T(d.t)+(sum?"   ·   "+sum:""),{fill:NAVY,color:"FFFFFFFF",bold:1,size:12});ws.getRow(r).height=24;r++;
+  let c=2;d.cols.forEach((col,i)=>{pos[col[0]]=c;put(ws,r,c,sp[i],T(col[1]),{fill:"FF2E4657",color:"FFFFFFFF",bold:1,h:"center"});c+=sp[i]});ws.getRow(r).height=26;r++;const f0=r;
+  R.forEach((row,ri)=>{c=2;let lines=1;d.cols.forEach((col,i)=>{const[k,,t]=col;let v=row[k],o={fill:YEL};
+    if(t==="calc"){o.fill=GRY;o.h="right";if(k==="_n"){v=ri+1;o.h="center"}else if(s==="s"&&k==="_d"){v={formula:`${CL(pos.act)}${r}-${CL(pos.plan)}${r}`};o.nf='#,##0;[Red](#,##0);"-"';if(num(row.act)<num(row.plan))o.fill="FFFBD3D6"}else if(s==="s"){v={formula:`IF(${CL(pos.plan)}${r}=0,"",${CL(pos.act)}${r}/${CL(pos.plan)}${r})`};o.nf="0.0%";if(num(row.plan)&&num(row.act)<num(row.plan)){o.fill="FFFBD3D6";o.color="FFB3261E"}}else{const[a,b,nf]=RATE[s];v={formula:`IFERROR(${CL(pos[a])}${r}/${CL(pos[b])}${r},0)`};o.nf=nf}}
+    else if(t==="num"){const n=parseFloat(String(v??"").replace(/,/g,""));if(!isNaN(n)&&String(v).trim()!=="")v=n;o.h="right";o.nf=s==="s"?'#,##0;(#,##0);"-"':(NF[s]||{})[k]}
+    else if(s==="s"&&(k==="item"||k==="name"))o.h="center";
+    else if(t==="sel"||t==="time"||t==="date")o.h="center";
+    else if(t==="area")lines=Math.max(lines,Math.ceil(String(v||"").length/(sp[i]*11)));
+    put(ws,r,c,sp[i],v===undefined?"":v,o);c+=sp[i]});ws.getRow(r).height=Math.max(22,lines*15);r++});
+  if(s==="s"){const L=k=>CL(pos[k]),sp=R.reduce((a,x)=>a+num(x.plan),0),sa=R.reduce((a,x)=>a+num(x.act),0),bad=sa<sp?{fill:"FFFBD3D6",color:"FFB3261E"}:{};
+    put(ws,r,2,3,"TOTAL",{fill:MINT,bold:1,h:"center"});put(ws,r,pos.plan,1,{formula:`SUM(${L("plan")}${f0}:${L("plan")}${r-1})`},{fill:MINT,bold:1,h:"right",nf:"#,##0"});put(ws,r,pos.act,1,{formula:`SUM(${L("act")}${f0}:${L("act")}${r-1})`},{fill:MINT,bold:1,h:"right",nf:"#,##0"});
+    put(ws,r,pos._d,1,{formula:`${L("act")}${r}-${L("plan")}${r}`},{fill:MINT,bold:1,h:"right",nf:'#,##0;[Red](#,##0);"-"',...bad});put(ws,r,pos._c,1,{formula:`IF(${L("plan")}${r}=0,"",${L("act")}${r}/${L("plan")}${r})`},{fill:MINT,bold:1,h:"right",nf:"0.0%",...bad});put(ws,r,pos.note,5,"",{fill:MINT});ws.getRow(r).height=24;r++}
+  if(s==="p"){const L=k=>CL(pos[k]);put(ws,r,2,2,T("total"),{fill:MINT,bold:1});put(ws,r,pos.plan,1,{formula:`SUM(${L("plan")}${f0}:${L("plan")}${r-1})`},{fill:MINT,bold:1,h:"right",nf:"#,##0"});put(ws,r,pos.act,1,{formula:`SUM(${L("act")}${f0}:${L("act")}${r-1})`},{fill:MINT,bold:1,h:"right",nf:"#,##0"});put(ws,r,pos._c,1,{formula:`IFERROR(${L("act")}${r}/${L("plan")}${r},0)`},{fill:MINT,bold:1,h:"right",nf:"0.0%"});put(ws,r,pos._c+1,6,"",{fill:MINT});ws.getRow(r).height=24;r++}
+  return r+1}
+const ws0=(wb,name)=>{const w=wb.addWorksheet(name);w.getColumn(1).width=2;for(let i=2;i<=13;i++)w.getColumn(i).width=15;w.pageSetup={orientation:"landscape",paperSize:9,fitToPage:true,fitToWidth:1,fitToHeight:0};w.views=[{showGridLines:false}];return w};
+function daySheet(wb,d){const D=S.days[d],ws=ws0(wb,d);put(ws,1,2,12,T("title"),{fill:NAVY,color:"FFFFFFFF",bold:1,size:15,h:"center"});ws.getRow(1).height=30;
+  const bi=BASIS.indexOf(D.basis);[[2,"date",d],[5,"writer",D.writer],[8,"checker",D.checker],[11,"basis",bi>=0?T("b"+bi):D.basis]].forEach(([c,k,v])=>{put(ws,3,c,1,T(k),{fill:MINT,bold:1});put(ws,3,c+1,2,v||"",{fill:YEL})});ws.getRow(3).height=26;let r=5;
+  DAY_SECS.forEach(s=>{const R=live(D[s]);let sum="";if(s==="e"){let h=0,n=0;R.forEach(x=>{h+=num(x.h);n+=num(x.cnt)||1});if(n)sum=T("sumE",{h:h.toFixed(2),n})}r=secX(ws,r,s,R.length?R:[{}],sum)});
+  put(ws,r,2,12,"07  "+T("s7"),{fill:NAVY,color:"FFFFFFFF",bold:1,size:12});r++;put(ws,r,2,6,T("issue7"),{fill:"FF2E4657",color:"FFFFFFFF",bold:1,h:"center"});put(ws,r,8,6,T("support"),{fill:"FF2E4657",color:"FFFFFFFF",bold:1,h:"center"});r++;
+  for(const[c,v]of[[2,D.issue],[8,D.support]]){ws.mergeCells(r,c,r+3,c+5);const x=ws.getCell(r,c);x.value=v||"";x.alignment={vertical:"top",wrapText:true};x.fill={type:"pattern",pattern:"solid",fgColor:{argb:YEL}};x.font={name:"Malgun Gothic",size:10};for(let rr=r;rr<=r+3;rr++)for(let cc=c;cc<=c+5;cc++)ws.getCell(rr,cc).border=BD}}
+async function exportXls(scope){if(!await lib("ExcelJS",EJS))return;const ds=scope==="month"?daysOf(monthOf(S.cur)):[S.cur],wb=new ExcelJS.Workbook();wb.creator="조립팀";
+  ds.forEach(d=>daySheet(wb,d));const wk=ws0(wb,T("tabK").slice(0,28));put(wk,1,2,12,T("sk"),{fill:NAVY,color:"FFFFFFFF",bold:1,size:15,h:"center"});wk.getRow(1).height=30;const kt=live(S.tasks);secX(wk,3,"k",kt.length?kt:[{}]);
+  const wd=wb.addWorksheet("DATA");wd.addRow(["date","key","value"]);dates().forEach(d=>wd.addRow([d,"JSON",JSON.stringify(S.days[d])]));wd.addRow(["TASKS","JSON",JSON.stringify(S.tasks)]);
+  const buf=await wb.xlsx.writeBuffer();dl(`조립팀_일일업무보고_${scope==="month"?monthOf(S.cur):S.cur}.xlsx`,new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));toast(T("exported"),"ok")}
+async function actExcel(){const m=monthOf(S.cur),n=daysOf(m).length;
+  const r=await modal({title:T("exportTitle"),body:`<label class="radio"><input type="radio" name="scope" value="day" checked><span>${esc(T("exDay",{d:fmtDayLong(S.cur)}))}</span></label><label class="radio"><input type="radio" name="scope" value="month"><span>${esc(T("exMonth",{m:fmtMonth(m),n}))}</span></label><div class="note">${esc(T("exNote"))}</div>`,actions:[{v:"no",label:T("cancel")},{v:"ok",label:T("bExcel"),cls:"pri"}]});
+  if(r.v==="ok")exportXls(r.data.scope)}
+
+/* =====================================================================
+   9. PDF ATTACHMENTS
+   ===================================================================== */
+async function addPdfs(files){const list=S.pdfs[S.cur]=S.pdfs[S.cur]||[];let n=0;
+  for(const f of files){if(!/pdf$/i.test(f.type)&&!/\.pdf$/i.test(f.name))continue;const id="pdf_"+Date.now()+"_"+Math.random().toString(36).slice(2,7);await putFile({id,name:f.name,type:"application/pdf",blob:f});list.push({id,name:f.name,size:f.size,at:Date.now()});n++}
+  if(n){persist();head();toast(T("pdfAdded",{n,d:fmtDayLong(S.cur)}),"ok")}return n}
+async function actPdfManager(){let urls=[];
+  const draw=m=>{const list=S.pdfs[S.cur]||[];m.querySelector("#pdfList").innerHTML=list.length?list.map(p=>`<div class="li" data-id="${p.id}"><span style="color:var(--rI)">${ic("pdf")}</span><div class="grow"><div class="t" title="${esc(p.name)}">${esc(p.name)}</div><div class="d">${fmtSize(p.size||0)} · ${esc(fmtStamp(p.at))}</div></div><button class="mbtn sm" data-pa="view">${esc(T("view"))}</button><button class="mbtn sm" data-pa="dl">${ic("down")}</button><button class="mbtn sm" data-pa="del" style="color:var(--rI)">${ic("trash")}</button></div>`).join(""):`<div class="empty">${esc(T("pdfEmpty"))}</div>`};
+  await modal({title:T("pdfTitle",{d:fmtDayLong(S.cur)}),wide:true,body:`<div class="pdfwrap"><div><button class="mbtn pri" id="pdfAdd" style="width:100%;margin-bottom:8px">+ ${esc(T("addPdf"))}</button><div class="list" id="pdfList"></div></div><iframe id="pdfView" title="PDF"></iframe></div>`,actions:[{v:"close",label:T("close")}],
+    onMount:m=>{draw(m);const fi=document.createElement("input");fi.type="file";fi.accept="application/pdf,.pdf";fi.multiple=true;fi.onchange=async()=>{await addPdfs([...fi.files]);fi.value="";draw(m)};
+      m.querySelector("#pdfAdd").onclick=()=>fi.click();m.querySelector("#pdfView").srcdoc=`<p style="font:13px sans-serif;color:#6B7C88;text-align:center;margin-top:30vh">${esc(T("pdfPick"))}</p>`;
+      m.querySelector("#pdfList").addEventListener("click",async e=>{const b=e.target.closest("[data-pa]");if(!b)return;const row=b.closest(".li"),id=row.dataset.id,meta=(S.pdfs[S.cur]||[]).find(p=>p.id===id),f=await getFile(id);
+        if(b.dataset.pa==="del"){if(!await confirmBox(`${T("del")}: ${meta?.name}?`,T("del"),true))return;await delFile(id);S.pdfs[S.cur]=(S.pdfs[S.cur]||[]).filter(p=>p.id!==id);persist();head();draw(m);return}
+        if(!f){toast(T("pdfMissing"),"err");return}const url=URL.createObjectURL(f.blob);urls.push(url);
+        if(b.dataset.pa==="dl"){dl(meta?.name||"report.pdf",f.blob);return}
+        m.querySelectorAll(".li").forEach(x=>x.classList.toggle("sel",x===row));const fr=m.querySelector("#pdfView");fr.removeAttribute("srcdoc");fr.src=url})}});
+  urls.forEach(u=>URL.revokeObjectURL(u))}
+
+/* =====================================================================
+   10. BACKUP / RESTORE / VERSIONS / HTML
+   ===================================================================== */
+async function buildPayload(){const files=[];for(const list of Object.values(S.pdfs||{}))for(const p of list){const f=await getFile(p.id);if(f&&f.blob)files.push({id:p.id,name:f.name||p.name,type:f.type||"application/pdf",data:await blobToB64(f.blob)})}
+  return{app:"assy-daily-report",v:3,exportedAt:Date.now(),state:S,files}}
+async function loadFiles(files){for(const f of(files||[]))if(!(await getFile(f.id)))await putFile({id:f.id,name:f.name,type:f.type,blob:b64ToBlob(f.data,f.type)})}
+const keepSettings=()=>({lang:S.settings.lang,collapsed:S.settings.collapsed,view:S.settings.view,autoHtml:S.settings.autoHtml});
+async function actBackup(){const p=await buildPayload(),d=new Date();dl(`조립팀_일일업무보고_backup_${ymd(d)}_${pad(d.getHours())}${pad(d.getMinutes())}.json`,JSON.stringify(p),"application/json");toast(T("backupDone"),"ok")}
+async function actRestoreFile(file){const text=await file.text();let p=null;
+  try{if(/\.html?$/i.test(file.name)){const m=text.match(/<script id="embedded-data" type="application\/json">([\s\S]*?)<\/script>/);p=m?JSON.parse(m[1]):null}else p=JSON.parse(text)}catch(e){p=null}
+  const st=p&&(p.app==="assy-daily-report"&&p.state?p.state:p.days?p:null),nx=toV3(st);
+  if(!nx){toast(T("bad"),"err");return}
+  if(!await confirmBox(T("restoreQ2",{d:fmtStamp(p.exportedAt||nx.savedAt||Date.now())}),T("restore")))return;
+  await snapshot("v_restore");await loadFiles(p.files);const k=keepSettings();S=nx;Object.assign(S.settings,k);tab="r";persist();render();toast(T("restored"),"ok")}
+async function actHistory(){const vs=((await DB.all("versions"))||[]).sort((a,b)=>b.at-a.at);
+  const r=await modal({title:T("histTitle"),body:`<div class="list">${vs.length?vs.map(v=>`<div class="li"><span>${ic("clock")}</span><div class="grow"><div class="t">${esc(fmtStamp(v.at))}</div><div class="d">${esc(T(v.label))} · ${esc(T("nDays",{n:v.nDays}))}</div></div><button class="mbtn sm" data-vid="${v.id}">${esc(T("restore"))}</button></div>`).join(""):`<div class="empty">${esc(T("histEmpty"))}</div>`}</div><div class="note">${esc(T("histNote"))}</div>`,
+    actions:[{v:"close",label:T("close")}],onMount:m=>m.querySelector(".list").addEventListener("click",e=>{const b=e.target.closest("[data-vid]");if(b)m._close("v:"+b.dataset.vid)})});
+  if(!r.v||!r.v.startsWith("v:"))return;const v=vs.find(x=>String(x.id)===r.v.slice(2));if(!v)return;
+  if(!await confirmBox(T("restoreQ"),T("restore")))return;await snapshot("v_restore");const k=keepSettings();S=toV3(JSON.parse(v.data));Object.assign(S.settings,k);tab="r";persist();render();toast(T("restored"),"ok")}
+async function buildHtml(){const json=JSON.stringify(await buildPayload()).replace(/</g,"\\u003c");return SOURCE.replace(/(<script id="embedded-data" type="application\/json">)[\s\S]*?(<\/script>)/,(m,a,b)=>a+json+b)}
+async function actHtml(){
+  const NAME="조립팀_일일업무보고.html";let h=null;
+  /* ask where to save first (needs the click's user-activation), then build the file */
+  if(window.showSaveFilePicker){
+    try{h=await showSaveFilePicker({id:"assy-html",suggestedName:NAME,types:[{description:"HTML",accept:{"text/html":[".html",".htm"]}}]})}
+    catch(e){if(e&&e.name==="AbortError")return;h=null}}
+  const html=await buildHtml();
+  if(h){try{const w=await h.createWritable();await w.write(html);await w.close();toast(T("htmlDone")+"\n"+h.name,"ok");return}catch(e){toast(String(e&&e.message||e),"err")}}
+  dl(NAME,html,"text/html");toast(T("htmlDone"),"ok")}
+/* auto-save HTML (File System Access API: Chrome / Edge) */
+let htmlT=null,htmlBusy=false;
+async function writeHtml(){if(!autoHtml.on||autoHtml.paused||!autoHtml.handle||htmlBusy)return;htmlBusy=true;
+  try{const w=await autoHtml.handle.createWritable();await w.write(await buildHtml());await w.close();lastHtmlAt=Date.now();updateSaved()}catch(e){autoHtml.paused=true;toast(T("autoErr",{e:e.message||e}),"err");head()}htmlBusy=false}
+function scheduleAutoHtml(){if(!autoHtml.on||autoHtml.paused)return;clearTimeout(htmlT);htmlT=setTimeout(writeHtml,2500)}
+async function actAuto(){
+  if(autoHtml.on&&autoHtml.paused&&autoHtml.handle){try{if(await autoHtml.handle.requestPermission({mode:"readwrite"})==="granted"){autoHtml.paused=false;head();await writeHtml();toast(T("autoOn",{f:autoHtml.handle.name}),"ok")}}catch(e){toast(T("autoErr",{e:e.message}),"err")}return}
+  if(autoHtml.on){if(!await confirmBox(T("autoOffQ")))return;autoHtml={on:false,paused:false,handle:null};S.settings.autoHtml=false;await DB.del("kv","htmlHandle");persist();head();toast(T("autoOff"));return}
+  if(!window.showSaveFilePicker){toast(T("autoUnsupported"),"err");return}
+  let h;try{h=await showSaveFilePicker({suggestedName:"조립팀_일일업무보고.html",types:[{description:"HTML",accept:{"text/html":[".html",".htm"]}}]})}catch(e){if(e.name!=="AbortError")toast(T("autoUnsupported"),"err");return}
+  autoHtml={on:true,paused:false,handle:h};S.settings.autoHtml=true;await DB.put("kv",{k:"htmlHandle",v:h});persist();head();await writeHtml();toast(T("autoOn",{f:h.name}),"ok")}
+async function resumeAutoHtml(){if(!S.settings.autoHtml)return;const rec=await DB.get("kv","htmlHandle");if(!rec||!rec.v){S.settings.autoHtml=false;return}
+  autoHtml={on:true,paused:true,handle:rec.v};try{if(await rec.v.queryPermission({mode:"readwrite"})==="granted")autoHtml.paused=false}catch(e){}head()}
+
+/* =====================================================================
+   11. EVENTS
+   ===================================================================== */
+const normTime=v=>{v=String(v||"").trim();let m;if((m=v.match(/^(\d{1,2})[:.h ]?(\d{2})$/))&&+m[1]<24&&+m[2]<60)return`${pad(m[1])}:${m[2]}`;if((m=v.match(/^(\d{1,2})$/))&&+m[1]<24)return`${pad(m[1])}:00`;return v};
+function stopHours(r,i){if(/^\d{2}:\d{2}$/.test(r.s||"")&&/^\d{2}:\d{2}$/.test(r.r||"")){const[a,b]=r.s.split(":").map(Number),[c,f]=r.r.split(":").map(Number);r.h=(((c*60+f-a*60-b)+1440)%1440/60).toFixed(2);const hi=document.querySelector(`[data-s="e"][data-i="${i}"][data-k="h"]`);if(hi)hi.value=fmtNum(r.h)}}
+$("app").addEventListener("input",e=>{const t=e.target,d=t.dataset;
+  if(t.id==="repDate")return;
+  if(d.top){day()[d.top]=t.value;if(t.tagName==="TEXTAREA")fitTA(t);touch();return}
+  if(!d.s)return;const r=rows(d.s)[+d.i];r[d.k]=d.num?t.value.replace(/,/g,"").trim():t.value;
+  if(d.s==="e"&&(d.k==="s"||d.k==="r")&&!d.tm)stopHours(r,d.i);
+  if(d.s==="k"&&d.k==="pct"){const b=t.parentElement.querySelector(".bar");if(b)b.style.width=Math.max(0,Math.min(100,num(t.value)))+"%"}
+  if(t.tagName==="TEXTAREA")fitTA(t);touch();calc()});
+$("app").addEventListener("change",e=>{const t=e.target;if(t.id==="repDate")renameDay(t.value)});
+document.addEventListener("focusin",e=>{const t=e.target;if(t.dataset&&t.dataset.num)t.value=t.value.replace(/,/g,"")});
+document.addEventListener("focusout",e=>{const t=e.target,d=t.dataset||{};
+  if(d.num)t.value=fmtNum(t.value);
+  if(d.tm){const nv=normTime(t.value),r=rows(d.s)[+d.i];if(nv!==t.value)t.value=nv;r[d.k]=nv;if(d.s==="e")stopHours(r,d.i);touch();calc()}});
+window.addEventListener("resize",auto);
+const ACT={
+  shipImp:()=>$("fShip").click(),
+  tab:b=>{tab=b.dataset.v;render()},lang:b=>{lang=S.settings.lang=b.dataset.v;try{localStorage.setItem("assy-lang",lang)}catch(x){}persist();render()},
+  add:async b=>{rows(b.dataset.s).push({});touch();render();const last=document.querySelectorAll(`[data-s="${b.dataset.s}"][data-i="${rows(b.dataset.s).length-1}"]`);if(last[0]&&!last[0].closest(".g"))last[0].focus()},
+  del:async b=>{const R=rows(b.dataset.s),i=+b.dataset.i;if(!isEmptyRow(R[i])&&!await confirmBox(T("cDelRow"),T("del"),true))return;R.splice(i,1);touch();render()},
+  prev:()=>{const ds=dates(),i=ds.indexOf(S.cur);if(i>0)goDay(ds[i-1])},next:()=>{const ds=dates(),i=ds.indexOf(S.cur);if(i<ds.length-1)goDay(ds[i+1])},
+  newDay:actNewDay,delDay:actDelDay,newMonth:actNewMonth,delMonth:actDelMonth,
+  upload:()=>$("fUp").click(),orig:()=>$("fUp").click(),pdf:()=>$("fPdf").click(),pdfs:actPdfManager,
+  backup:actBackup,restore:()=>$("fRestore").click(),history:actHistory,excel:actExcel,html:actHtml,auto:actAuto,print:()=>window.print(),
+  view:()=>{S.settings.view=!S.settings.view;persist();head()},collapse:()=>{S.settings.collapsed=!S.settings.collapsed;persist();head()}};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(b&&!b.closest(".mask")&&ACT[b.dataset.act])ACT[b.dataset.act](b)});
+document.addEventListener("change",e=>{const t=e.target;
+  if(t.id==="selMonth"){const d=daysOf(t.value);if(d.length)goDay(d[d.length-1])}
+  else if(t.id==="selDay")goDay(t.value)
+  else if(t.id==="fUp"&&t.files.length){importFiles([...t.files]);t.value=""}
+  else if(t.id==="fPdf"&&t.files.length){addPdfs([...t.files]).then(n=>{if(n)actPdfManager()});t.value=""}
+  else if(t.id==="fRestore"&&t.files[0]){actRestoreFile(t.files[0]);t.value=""}
+  else if(t.id==="fShip"&&t.files.length){importFiles([...t.files],true);t.value=""}});
+/* paste or drop a photo of the shipping table → section 04 */
+document.addEventListener("paste",e=>{if(tab!=="r"||S.settings.view||document.querySelector(".mask"))return;if(mcHasCellText(e))return;const f=[...(e.clipboardData?.items||[])].filter(i=>i.kind==="file"&&/^image\//.test(i.type)).map(i=>i.getAsFile()).filter(Boolean);
+  if(!f.length)return;e.preventDefault();importFiles(f.map(x=>x.name?x:new File([x],"clipboard.png",{type:x.type})),true)});
+document.addEventListener("dragover",e=>{if(e.dataTransfer&&[...e.dataTransfer.types].includes("Files"))e.preventDefault()});
+document.addEventListener("drop",e=>{if(!e.dataTransfer||!e.dataTransfer.files.length||document.querySelector(".mask"))return;e.preventDefault();const fs=[...e.dataTransfer.files];importFiles(fs,!!e.target.closest&&!!e.target.closest("#shipSec"))});
+document.addEventListener("keydown",async e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){e.preventDefault();clearTimeout(persistT);persist();await snapshot("v_manual");toast(T("savedToast"),"ok")}});
+window.addEventListener("beforeunload",()=>{if(persistT){clearTimeout(persistT);persist()}});
+setInterval(()=>{if(dirtySnap)snapshot("v_auto")},600000);
+
+/* =====================================================================
+   MULTI-CELL COPY / PASTE
+   - Drag across cells (or Shift+click) to select a block; click a column header to select the column
+   - Ctrl+C / Ctrl+X / Delete on the selection; Ctrl+V pastes a block from Excel/Sheets/this app
+   - Paste starts at the focused/selected cell, spreads right over editable columns (calculated
+     columns are skipped), adds rows when needed; one value + block selected = fill
+   - Ctrl+Z undoes the last paste / cut / delete
+   ===================================================================== */
+Object.assign(W,{
+  mcPaste:["{r}행 × {c}열 붙여넣기 완료","Đã dán {r} dòng × {c} cột","Pasted {r} rows × {c} columns"],
+  mcTrunc:["표 범위를 벗어난 {n}개 열은 무시됨","{n} cột vượt quá bảng đã bị bỏ qua","{n} column(s) beyond the table were ignored"],
+  mcRows:["행 수 제한({n})으로 일부 행이 무시됨","Vượt giới hạn {n} dòng, phần còn lại bị bỏ qua","Row limit ({n}) reached, the rest was ignored"],
+  mcCopy:["{r}행 × {c}열 복사됨","Đã copy {r} dòng × {c} cột","Copied {r} rows × {c} columns"],
+  mcCut:["{r}행 × {c}열 잘라내기 완료","Đã cắt {r} dòng × {c} cột","Cut {r} rows × {c} columns"],
+  mcClear:["{r}행 × {c}열 삭제됨","Đã xóa nội dung {r} dòng × {c} cột","Cleared {r} rows × {c} columns"],
+  mcUndo:["되돌렸습니다","Đã hoàn tác","Undone"]});
+/* true when the clipboard has text (e.g. Excel puts text AND a screenshot) and the paste targets a table cell/selection */
+function mcHasCellText(e){const cd=e.clipboardData;if(!cd)return false;const t=cd.getData("text/plain");if(!t||!t.trim())return false;
+  const ae=document.activeElement,d=ae&&ae.dataset;return !!(MC.sel||(d&&d.s!==undefined&&d.k!==undefined&&SEC[d.s]))}
+const MC={sel:null,anchor:null,drag:false,range:false,undo:null,undoOK:false,key:""},MC_MAXR=300,MC_DEC=new Set(["h","pct"]);
+const mcSec=td=>td&&td.closest?td.closest("section[data-sec]"):null;
+function mcPos(td){
+  if(!td||(td.tagName!=="TD"&&td.tagName!=="TH")||td.classList.contains("x"))return null;
+  const sc=mcSec(td);if(!sc||!SEC[sc.dataset.sec])return null;
+  const tr=td.parentElement;if(tr.classList.contains("t"))return null;
+  const ri=[...sc.querySelector("table").rows].indexOf(tr),c=td.cellIndex;
+  if(ri<0||c>=SEC[sc.dataset.sec].cols.length)return null;
+  return{s:sc.dataset.sec,r:ri-1,c,th:td.tagName==="TH"}}
+const mcEd=(s,c1,c2)=>{const o=[];SEC[s].cols.forEach((c,i)=>{if(i>=c1&&i<=c2&&c[2]!=="calc")o.push(i)});return o};
+const mcNorm=m=>({s:m.s,r1:Math.min(m.r1,m.r2),r2:Math.max(m.r1,m.r2),c1:Math.min(m.c1,m.c2),c2:Math.max(m.c1,m.c2)});
+function mcClearSel(){MC.sel=null;document.querySelectorAll("td.csel").forEach(x=>x.classList.remove("csel"))}
+function mcApplySel(){
+  document.querySelectorAll("td.csel").forEach(x=>x.classList.remove("csel"));
+  if(!MC.sel)return;
+  const sc=document.querySelector(`section[data-sec="${MC.sel.s}"]`);if(!sc){MC.sel=null;return}
+  const n=mcNorm(MC.sel),trs=[...sc.querySelector("table").rows],last=Math.min(n.r2,(rows(n.s)||[]).length-1);
+  if(last<n.r1){MC.sel=null;return}
+  for(let r=n.r1;r<=last;r++){const tr=trs[r+1];if(!tr)continue;for(let c=n.c1;c<=n.c2;c++){const td=tr.cells[c];if(td)td.classList.add("csel")}}}
+function mcSetSel(a,b){MC.sel=mcNorm({s:a.s,r1:a.r,r2:b.r,c1:a.c,c2:b.c});mcApplySel()}
+function render(){const k=S.cur+"|"+tab;if(MC.key!==k){MC.sel=null;MC.key=k}render0();mcApplySel()}
+
+/* ---- parse / convert ---- */
+function mcParse(t){
+  t=t.replace(/\r\n?/g,"\n");const out=[];let row=[],cur="",q=false;
+  for(let i=0;i<t.length;i++){const ch=t[i];
+    if(q){if(ch==='"'){if(t[i+1]==='"'){cur+='"';i++}else q=false}else cur+=ch}
+    else if(ch==='"'&&cur===""){q=true}
+    else if(ch==="\t"){row.push(cur);cur=""}
+    else if(ch==="\n"){row.push(cur);out.push(row);row=[];cur=""}
+    else cur+=ch}
+  if(cur!==""||row.length){row.push(cur);out.push(row)}
+  return out}
+const mcQuote=v=>/[\t\r\n"]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;
+function mcDate(v){v=v.trim();let m;if(!v)return"";
+  if(m=v.match(/^(\d{4})[\/.\-](\d{1,2})[\/.\-](\d{1,2})/))return`${m[1]}-${pad(m[2])}-${pad(m[3])}`;
+  if(m=v.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})/)){let d=+m[1],mo=+m[2];if(mo>12&&d<=12)[d,mo]=[mo,d];return`${m[3]}-${pad(mo)}-${pad(d)}`}
+  return""}
+function mcSelVal(col,v){
+  const o=col[3]||[];v=v.trim();if(!v)return"";const n=x=>String(x).toLowerCase().replace(/\s+/g,""),nv=n(v);
+  for(const x of o)if(n(x)===nv||n(lab(x))===nv)return x;
+  for(const x of o){const L=LAB[x];if(L&&L.some(z=>n(z)===nv))return x}
+  if(col[3]===FAC){if(/^[1-4]$/.test(v))return v+"공장";const m=v.match(/([1-4])/);if(m&&/plant|xưởng|xuong|공장|factory|nhà máy/i.test(v))return m[1]+"공장"}
+  return v}
+function mcConv(col,v){
+  v=String(v).replace(/\u00a0/g," ");const t=col[2];
+  if(t==="num"){let x=v.trim().replace(/\s/g,"").replace(/%$/,"");
+    if(/^-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(x)&&!/^-?0\./.test(x)&&(!MC_DEC.has(col[0])||x.includes(",")))x=x.replace(/\./g,"").replace(",",".");
+    else if(MC_DEC.has(col[0])&&/^-?\d+,\d{1,2}$/.test(x))x=x.replace(",",".");
+    else x=x.replace(/,/g,"");
+    return x}
+  if(t==="time")return normTime(v);
+  if(t==="date")return mcDate(v);
+  if(t==="sel")return mcSelVal(col,v);
+  return v}
+
+/* ---- apply a block of values ---- */
+function mcSnap(s){MC.undo={s,cur:S.cur,tab,rows:clone(rows(s))};MC.undoOK=true}
+function mcApply(s,r0,c0,grid){
+  const cols=SEC[s].cols,R=rows(s),ed=mcEd(s,0,cols.length-1);
+  let p=ed.findIndex(i=>i>=c0);if(p<0)p=ed.length-1;
+  mcSnap(s);
+  let nr=grid.length,rowCut=false;if(r0+nr>MC_MAXR){nr=Math.max(0,MC_MAXR-r0);rowCut=true}
+  const wide=Math.max(...grid.map(r=>r.length)),avail=ed.length-p,used=Math.min(wide,avail);
+  for(let gi=0;gi<nr;gi++){
+    while(R.length<=r0+gi)R.push({});
+    const r=R[r0+gi];let setT=false,setH=false;
+    for(let gj=0;gj<used;gj++){const col=cols[ed[p+gj]];if(gj>=grid[gi].length)continue;r[col[0]]=mcConv(col,grid[gi][gj]);if(s==="e"){if(col[0]==="s"||col[0]==="r")setT=true;if(col[0]==="h")setH=true}}
+    if(s==="e"&&setT&&!setH)stopHours(r,r0+gi)}
+  touch();
+  MC.sel={s,r1:r0,r2:r0+nr-1,c1:ed[p],c2:ed[p+used-1]};
+  render();
+  toast(T("mcPaste",{r:nr,c:used}),"ok");
+  if(wide>avail)toast(T("mcTrunc",{n:wide-avail}),"err");
+  if(rowCut)toast(T("mcRows",{n:MC_MAXR}),"err")}
+
+/* ---- read / clear selection ---- */
+function mcGrid(){
+  const n=mcNorm(MC.sel),R=rows(n.s)||[],cols=SEC[n.s].cols,ed=mcEd(n.s,n.c1,n.c2),g=[];
+  for(let r=n.r1;r<=Math.min(n.r2,R.length-1);r++)g.push(ed.map(c=>{const col=cols[c];let v=R[r][col[0]];v=v==null?"":String(v);return col[2]==="sel"?lab(v):v}));
+  return{g,nc:ed.length}}
+function mcCopy(){
+  const{g,nc}=mcGrid();if(!nc||!g.length)return null;
+  const txt=g.map(r=>r.map(mcQuote).join("\t")).join("\r\n");let ok=false;
+  const ta=document.createElement("textarea");ta.value=txt;ta.setAttribute("readonly","");ta.style.cssText="position:fixed;left:-9999px;top:0;opacity:0";
+  document.body.appendChild(ta);ta.focus();ta.select();try{ok=document.execCommand("copy")}catch(x){}ta.remove();
+  if(!ok&&navigator.clipboard)navigator.clipboard.writeText(txt).catch(()=>{});
+  return{r:g.length,c:nc}}
+function mcClearCells(){
+  const n=mcNorm(MC.sel),R=rows(n.s),cols=SEC[n.s].cols,ed=mcEd(n.s,n.c1,n.c2);if(!ed.length)return null;
+  mcSnap(n.s);let cnt=0;
+  for(let r=n.r1;r<=Math.min(n.r2,R.length-1);r++){ed.forEach(c=>{R[r][cols[c][0]]="";});cnt++}
+  touch();render();return{r:cnt,c:ed.length}}
+function mcDoUndo(){
+  const u=MC.undo;if(!u||u.cur!==S.cur)return;
+  if(u.s==="k")S.tasks=u.rows;else day()[u.s]=u.rows;
+  MC.undo=null;MC.undoOK=false;touch();render();toast(T("mcUndo"),"ok")}
+
+/* ---- events ---- */
+const mcOff=()=>S.settings.view||document.querySelector(".mask")||(tab!=="r"&&tab!=="k");
+document.addEventListener("mousedown",e=>{
+  if(e.button!==0||mcOff())return;
+  const td=e.target.closest&&e.target.closest("td,th"),p=mcPos(td);
+  if(!p){if(MC.sel)mcClearSel();MC.drag=false;return}
+  if(p.th){const R=rows(p.s)||[];MC.sel={s:p.s,r1:0,r2:Math.max(0,R.length-1),c1:p.c,c2:p.c};MC.anchor=null;MC.drag=false;
+    if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();getSelection().removeAllRanges();e.preventDefault();mcApplySel();return}
+  if(e.shiftKey&&MC.anchor&&MC.anchor.s===p.s&&(MC.anchor.r!==p.r||MC.anchor.c!==p.c)){
+    e.preventDefault();if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();getSelection().removeAllRanges();mcSetSel(MC.anchor,p);return}
+  MC.anchor=p;MC.drag=true;MC.range=false;if(MC.sel)mcClearSel()});
+document.addEventListener("mousemove",e=>{
+  if(!MC.drag||!MC.anchor)return;
+  const el=document.elementFromPoint(e.clientX,e.clientY),p=mcPos(el&&el.closest?el.closest("td"):null);
+  if(!p||p.s!==MC.anchor.s)return;
+  if(!MC.range){if(p.r===MC.anchor.r&&p.c===MC.anchor.c)return;MC.range=true;document.body.classList.add("selecting");
+    if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();getSelection().removeAllRanges()}
+  mcSetSel(MC.anchor,p)});
+document.addEventListener("mouseup",()=>{if(MC.drag){MC.drag=false;if(MC.range){MC.range=false;document.body.classList.remove("selecting")}}});
+document.addEventListener("selectstart",e=>{if(MC.range)e.preventDefault()});
+document.addEventListener("focusin",e=>{const d=e.target.dataset;if(MC.sel&&d&&d.s!==undefined&&!MC.drag)mcClearSel()});
+$("app").addEventListener("input",()=>{MC.undoOK=false},true);
+
+document.addEventListener("keydown",e=>{
+  if(mcOff())return;
+  const k=e.key,mod=e.ctrlKey||e.metaKey,ae=document.activeElement,typing=ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName);
+  if(k==="Escape"&&MC.sel){mcClearSel();return}
+  if(mod&&!e.shiftKey&&k.toLowerCase()==="z"&&MC.undoOK&&MC.undo){e.preventDefault();mcDoUndo();return}
+  if(!MC.sel||typing)return;
+  const lk=k.toLowerCase();
+  if(mod&&(lk==="c"||lk==="x")){e.preventDefault();const r=mcCopy();if(!r)return;
+    if(lk==="x"){const c=mcClearCells();if(c)toast(T("mcCut",c),"ok")}else toast(T("mcCopy",r),"ok")}
+  else if(k==="Delete"||k==="Backspace"){e.preventDefault();const c=mcClearCells();if(c)toast(T("mcClear",c),"ok")}});
+
+document.addEventListener("paste",e=>{
+  if(mcOff())return;const cd=e.clipboardData;if(!cd)return;
+  const text=cd.getData("text/plain");if(!text)return;
+  const ae=document.activeElement,d=ae&&ae.dataset;let a=null,n=null;
+  if(MC.sel){n=mcNorm(MC.sel);a={s:n.s,r:n.r1,c:n.c1}}
+  else if(d&&d.s!==undefined&&d.k!==undefined&&SEC[d.s]){const ci=SEC[d.s].cols.findIndex(c=>c[0]===d.k);if(ci>=0)a={s:d.s,r:+d.i,c:ci}}
+  if(!a)return;
+  let grid=mcParse(text);if(!grid.length)return;
+  const single=grid.length===1&&grid[0].length===1,multi=n&&(n.r2>n.r1||n.c2>n.c1);
+  if(single&&!multi&&ae&&/^(INPUT|TEXTAREA)$/.test(ae.tagName)&&!/[\r\n]/.test(text))return; // plain single value: normal paste
+  if(single&&multi){const w=mcEd(n.s,n.c1,n.c2).length;grid=Array.from({length:n.r2-n.r1+1},()=>Array(w).fill(grid[0][0]))}
+  e.preventDefault();mcApply(a.s,a.r,a.c,grid)});
+
+
+/* =====================================================================
+   12. START — newest of: data embedded in this file / this browser's saved copy (incl. older versions)
+   ===================================================================== */
+
+/* =====================================================================
+   SERVER SYNC (Netlify)  — active only when the page is served over http(s) and /api/db answers
+   - load: newest of server / this browser; first visit seeds an empty server
+   - save: every change is pushed (debounced) with the revision it was based on;
+           if someone else saved first (409) their version is loaded and ours kept in Version history
+   - poll: every 20 s, newer data from colleagues is pulled in (not while typing)
+   - files: attached PDFs are stored on the server too
+   ===================================================================== */
+Object.assign(W,{
+  svOk:["서버 동기화됨","Đã đồng bộ server","Synced"],svSaving:["서버에 저장 중…","Đang lưu lên server…","Saving to server…"],svErr:["서버 저장 실패 – 다시 시도합니다","Lỗi lưu server – sẽ thử lại","Server save failed – retrying"],svOff:["오프라인 (이 기기에만 저장)","Ngoại tuyến (chỉ lưu trên máy này)","Offline (saved on this device only)"],
+  svPull:["다른 사용자가 수정한 최신 데이터를 불러왔습니다","Đã tải dữ liệu mới do người khác cập nhật","Loaded newer data saved by a colleague"],
+  svConflict:["다른 사용자가 먼저 저장했습니다. 최신 데이터를 불러왔고, 내 수정본은 버전 기록에 보관했습니다.","Người khác vừa lưu trước. Đã tải bản mới nhất; bản của bạn được giữ trong Lịch sử phiên bản.","Someone saved first. Their version was loaded; yours is kept in Version history."],
+  svTokenT:["접속 비밀번호","Mật khẩu truy cập","Access password"],svTokenQ:["이 보고서는 비밀번호로 보호되어 있습니다.","Báo cáo này được bảo vệ bằng mật khẩu.","This report is password-protected."],svTokenBad:["비밀번호가 올바르지 않습니다","Mật khẩu không đúng","Wrong password"],
+  v_conflict:["충돌 전 내 수정본","Bản của tôi trước khi xung đột","Mine before conflict"],svFileBig:["파일이 커서 서버에 올리지 못했습니다 (최대 5.5MB): {f}","File quá lớn, không lưu được lên server (tối đa 5,5MB): {f}","File too large for the server (max 5.5 MB): {f}"]});
+const SV={on:false,rev:0,dirty:false,busy:false,t:null,st:"",at:0,token:"",typed:0};
+document.addEventListener("input",()=>{SV.typed=Date.now()},true);document.addEventListener("keydown",()=>{SV.typed=Date.now()},true);
+const PER_USER=["lang","view","collapsed","autoHtml"];
+const keepUser=()=>Object.fromEntries(PER_USER.map(k=>[k,S&&S.settings?S.settings[k]:undefined]));
+try{SV.token=localStorage.getItem("assy-sv-token")||""}catch(e){}
+async function svFetch(path,opt={},retry=true){
+  const r=await fetch(path,{...opt,cache:"no-store",headers:{...(opt.headers||{}),"x-app-token":SV.token}});
+  if(r.status===401&&retry){
+    const m=await modal({title:T("svTokenT"),body:`<div class="note" style="margin:0 0 10px">${esc(T("svTokenQ"))}</div><input type="password" name="pw" style="width:100%" autofocus>`,actions:[{v:"ok",label:T("ok"),cls:"pri"}],onMount:x=>{const i=x.querySelector("input");setTimeout(()=>i.focus(),50);i.addEventListener("keydown",e=>{if(e.key==="Enter")x._close("ok")})}});
+    if(m.v!=="ok")return r;SV.token=m.data.pw||"";try{localStorage.setItem("assy-sv-token",SV.token)}catch(e){}
+    const r2=await svFetch(path,opt,false);if(r2.status===401){toast(T("svTokenBad"),"err");return svFetch(path,opt,true)}return r2}
+  return r}
+function svSet(st){SV.st=st;if(st==="ok")SV.at=Date.now();updateSaved()}
+async function svInit(){
+  if(!/^https?:$/.test(location.protocol))return null;
+  try{const r=await svFetch("/api/db");if(!r.ok)return null;const j=await r.json();if(!j||!j.ok)return null;SV.on=true;SV.rev=j.rev||0;return j}catch(e){return null}}
+function svSchedule(){if(!SV.on)return;SV.dirty=true;svSet("saving");clearTimeout(SV.t);SV.t=setTimeout(svPush,1200)}
+async function svPush(){
+  if(!SV.on)return;if(SV.busy){clearTimeout(SV.t);SV.t=setTimeout(svPush,800);return}
+  SV.busy=true;SV.dirty=false;
+  try{const r=await svFetch("/api/db",{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({state:S,baseRev:SV.rev})});
+    const j=await r.json().catch(()=>({}));
+    if(r.status===409&&j.state){await snapshot("v_conflict");const k=keepUser();S=toV3(j.state);Object.assign(S.settings,k);SV.rev=j.rev;try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}render();svSet("ok");toast(T("svConflict"),"err")}
+    else if(r.ok&&j.ok){SV.rev=j.rev;svSet(SV.dirty?"saving":"ok")}
+    else throw new Error(j.error||r.status)}
+  catch(e){SV.dirty=true;svSet("err");clearTimeout(SV.t);SV.t=setTimeout(svPush,8000)}
+  finally{SV.busy=false}}
+async function svPoll(){
+  if(!SV.on||SV.busy||SV.dirty||document.hidden||document.querySelector(".mask"))return;
+  if(Date.now()-SV.typed<15000||MC.drag||MC.sel)return;
+  try{const r=await svFetch("/api/db?meta=1",{},false);if(!r.ok){svSet("off");return}const m=await r.json();if(SV.st==="off")svSet("ok");
+    if(m.rev===SV.rev)return;const f=await(await svFetch("/api/db",{},false)).json();if(!f.ok||!f.state||SV.dirty)return;
+    const k=keepUser(),cur=S.cur;S=toV3(f.state);Object.assign(S.settings,k);if(S.days[cur])S.cur=cur;SV.rev=f.rev;
+    try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}render();svSet("ok");toast(T("svPull"),"ok")}
+  catch(e){svSet("off")}}
+const svStatus=()=>!SV.on?"":` · <b style="color:${SV.st==="err"||SV.st==="off"?"#F5A3A3":SV.st==="saving"?"#F0CC7A":"#8FE0B4"}">☁ ${esc(T(SV.st==="saving"?"svSaving":SV.st==="err"?"svErr":SV.st==="off"?"svOff":"svOk"))}${SV.st==="ok"&&SV.at?" "+esc(fmtStamp(SV.at).split(" ")[lang==="vi"?0:1]):""}</b>`;
+async function svPutFile(o){if(!SV.on||!o||!o.blob)return;if(o.blob.size>5.5*1048576){toast(T("svFileBig",{f:o.name||o.id}),"err");return}
+  try{await svFetch("/api/db/file/"+encodeURIComponent(o.id),{method:"PUT",headers:{"content-type":o.type||"application/octet-stream","x-file-name":encodeURIComponent(o.name||o.id)},body:o.blob})}catch(e){}}
+async function svGetFile(id){if(!SV.on)return null;try{const r=await svFetch("/api/db/file/"+encodeURIComponent(id),{},false);if(!r.ok)return null;const b=await r.blob();const o={id,name:id,type:b.type||"application/pdf",blob:b};await DB.put("files",o);return o}catch(e){return null}}
+async function svDelFile(id){if(!SV.on)return;try{await svFetch("/api/db/file/"+encodeURIComponent(id),{method:"DELETE"},false)}catch(e){}}
+
+(async function init(){
+  await DB.open();
+  const cands=[];
+  try{const e=JSON.parse($("embedded-data").textContent||"null");if(e){const st=e.app==="assy-daily-report"&&e.state?e.state:e.days?e:null,s=toV3(st);if(s)cands.push({s,files:e.files,rank:3})}}catch(x){}
+  const ls=(k,rank)=>{try{const s=toV3(JSON.parse(localStorage.getItem(k)||"null"));if(s)cands.push({s,rank})}catch(x){}};
+  ls(LSK,2);ls("assy-report-v3",1);ls("assy-daily-v2",0);
+  cands.sort((a,b)=>(b.s.savedAt||0)-(a.s.savedAt||0)||b.rank-a.rank);
+  const pick=cands[0];S=pick?pick.s:toV3({days:{}});if(pick&&pick.files)await loadFiles(pick.files);
+  if(!S.settings.ship2){Object.values(S.days).forEach(D=>{(D.s||[]).forEach(r=>{if(r.model&&!r.item){r.item=r.model;delete r.model}});
+      if(!shipHasData(D.s))D.s=SHIP_LIST.map(([item,name])=>({item,name}))});S.settings.ship2=true}
+  let l0=null;try{l0=localStorage.getItem("assy-lang")}catch(x){}
+  lang=S.settings.lang||l0||"vi";
+  const sv=await svInit();
+  if(sv){const k=keepUser();
+    if(sv.state&&(sv.savedAt||0)>=(S.savedAt||0)){S=toV3(sv.state);Object.assign(S.settings,k);try{localStorage.setItem(LSK,JSON.stringify(S))}catch(x){}svSet("ok")}
+    else{svSet("saving");setTimeout(svPush,300)}
+    setInterval(svPoll,20000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)svPoll()})}
+  render();await resumeAutoHtml();
+})();
+</script></body></html>

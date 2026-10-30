@@ -1,0 +1,20 @@
+{
+  "name": "assy-daily-report",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "조립팀 일일 업무 보고 – Netlify site with a shared database (Netlify Blobs)",
+  "scripts": {
+    "dev": "netlify dev",
+    "deploy": "netlify deploy --prod"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^8.2.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.38.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
