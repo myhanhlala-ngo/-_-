@@ -6,9 +6,12 @@
 //   GET    /api/db/file/:id      -> binary (attached PDF)
 //   PUT    /api/db/file/:id      <- binary body, header x-file-name
 //   DELETE /api/db/file/:id
+//   POST   /api/db/tr            <- { texts:[...], tl:"ko"|"vi"|"en" }  -> { ok, out:[{ t, src }] }  machine translation
 //
 // Optional protection: set the environment variable APP_TOKEN in Netlify.
 // Every request must then send the same value in the header "x-app-token".
+// Optional: GOOGLE_TRANSLATE_KEY = API key of Google Cloud Translation (v2). Without it the free
+// public endpoint of Google Translate is used (fine for a team report, no SLA).
 
 import { getStore } from "@netlify/blobs";
 
@@ -27,6 +30,32 @@ const env = (k) => {
   return process.env[k] || "";
 };
 
+const LANGS = ["ko", "vi", "en"];
+async function gtx(text, tl) {
+  const u = "https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=auto&tl=" + tl + "&q=" + encodeURIComponent(text);
+  const r = await fetch(u, { headers: { "user-agent": "Mozilla/5.0" } });
+  if (!r.ok) throw new Error("translate " + r.status);
+  const j = await r.json();
+  return { t: (j[0] || []).map((x) => x[0]).join(""), src: j[2] || "" };
+}
+async function translate(texts, tl) {
+  const key = env("GOOGLE_TRANSLATE_KEY");
+  if (key) {
+    const r = await fetch("https://translation.googleapis.com/language/translate/v2?key=" + encodeURIComponent(key), {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ q: texts, target: tl, format: "text" }),
+    });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j?.error?.message || "translate " + r.status);
+    return j.data.translations.map((x) => ({ t: x.translatedText, src: x.detectedSourceLanguage || "" }));
+  }
+  const out = new Array(texts.length);
+  let next = 0;
+  await Promise.all(Array.from({ length: 6 }, async () => {
+    while (next < texts.length) { const i = next++; try { out[i] = await gtx(texts[i], tl); } catch { out[i] = null; } }
+  }));
+  return out;
+}
+
 async function readState(store) {
   const r = await store.getWithMetadata(STATE_KEY, { type: "json" });
   if (!r || r.data == null) return { rev: 0, savedAt: 0, state: null };
@@ -43,6 +72,15 @@ export default async (req) => {
   const sub = url.pathname.replace(/^\/api\/db\/?/, "");
 
   try {
+    /* ---------- machine translation ---------- */
+    if (sub === "tr") {
+      if (req.method !== "POST") return json({ ok: false, error: "method" }, 405);
+      const b = await req.json().catch(() => null);
+      const tl = b && b.tl, texts = b && Array.isArray(b.texts) ? b.texts.slice(0, 60).map((x) => String(x).slice(0, 4000)) : null;
+      if (!texts || !LANGS.includes(tl)) return json({ ok: false, error: "bad body" }, 400);
+      return json({ ok: true, out: await translate(texts, tl) });
+    }
+
     /* ---------- attached files ---------- */
     if (sub.startsWith("file/")) {
       const id = decodeURIComponent(sub.slice(5));

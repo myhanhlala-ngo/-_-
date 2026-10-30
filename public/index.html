@@ -209,6 +209,7 @@ shipOcr:["사진 판독 중… {p}%","Đang đọc ảnh… {p}%","Reading photo
 shipXlsNote:["엑셀 파일에서 읽은 값입니다.","Số liệu đọc từ file Excel.","Values read from the Excel file."],shipNone:["출하 표를 찾지 못했습니다: {f}","Không tìm thấy bảng xuất hàng trong: {f}","No shipping table found in: {f}"],
 shipDone:["출하 {n}개 품목 → {d}","xuất hàng {n} mã → báo cáo {d}","shipping {n} items → {d}"],tgFile:["{d} – 파일/사진에 적힌 날짜","{d} – ngày ghi trên file / ảnh","{d} – date on the file / photo"],
 ocrFail:["사진 판독 엔진을 불러오지 못했습니다. 인터넷 연결을 확인하세요.","Không tải được bộ đọc ảnh (OCR). Kiểm tra kết nối Internet.","Could not load the OCR engine. Check your connection."],
+trBusy:["번역 중… {n}","Đang dịch… {n}","Translating… {n}"],trFail:["자동 번역을 할 수 없습니다 (인터넷 연결 확인). 원문으로 표시합니다.","Không dịch tự động được (kiểm tra Internet). Đang hiển thị nội dung gốc.","Automatic translation unavailable (check Internet). Showing original text."],
 htmlDone:["데이터가 포함된 HTML을 다운로드했습니다","Đã tải file HTML (gồm toàn bộ dữ liệu)","Downloaded HTML with all data"],savedToast:["저장했습니다","Đã lưu","Saved"]};
 const LI={ko:0,vi:1,en:2};
 let lang="vi";
@@ -224,7 +225,55 @@ const LAB={ // display labels for stored (Korean) values
   "1공장":["1공장","Xưởng 1","Plant 1"],"2공장":["2공장","Xưởng 2","Plant 2"],"3공장":["3공장","Xưởng 3","Plant 3"],"4공장":["4공장","Xưởng 4","Plant 4"],
   "신모델":["신모델","Model mới","New model"],"WORST 불량":["WORST 불량","Lỗi WORST","WORST defect"],"설비 비가동":["설비 비가동","Dừng thiết bị","Downtime"],"인력 효율화":["인력 효율화","Hiệu quả nhân lực","Manpower efficiency"],
   "계획":["계획","Kế hoạch","Planned"],"진행중":["진행중","Đang làm","In progress"],"지연":["지연","Trễ hạn","Delayed"],"완료":["완료","Hoàn thành","Done"],"보류":["보류","Tạm hoãn","On hold"]};
+Object.assign(LAB,{"Auto":["자동","Auto","Auto"],"Thủ công":["수동","Thủ công","Manual"],
+  "Vinyl":["비닐","Vinyl","Vinyl"],"điện trở":["저항","điện trở","Resistance"],"gắn Tape":["테이프 부착","gắn Tape","Tape attach"],"lazer MTS":["레이저 MTS","lazer MTS","Laser MTS"],"Vision chức năng":["비전 기능","Vision chức năng","Vision function"],"All công đoạn":["전 공정","All công đoạn","All processes"],
+  "đang setup":["셋업 중","đang setup","Setting up"],"đang chuẩn bị thiết bị":["설비 준비 중","đang chuẩn bị thiết bị","Preparing equipment"],"đang chuẩn bị vật tư":["자재 준비 중","đang chuẩn bị vật tư","Preparing materials"],"đang test máy":["설비 테스트 중","đang test máy","Testing machine"],"đang sản xuất":["생산 중","đang sản xuất","In production"],"hoàn thành":["완료","hoàn thành","Completed"]});
 const lab=v=>LAB[v]?LAB[v][LI[lang]]:v;
+/* =====================================================================
+   CONTENT TRANSLATION — free-text cells follow the language button
+   - originals are stored as typed; translations live in S.tr[original] = {src, ko, vi, en}
+     (saved with the data, so every sentence is translated once for the whole team)
+   - after every render the visible texts missing a translation are sent to the translator
+   - a cell you edit keeps what you typed (any language); it is then translated for every viewer
+   - codes / model names / numbers / people are never translated
+   ===================================================================== */
+const TRF={p:["rsn","rdt"],q:["def","act"],e:["cause","pic"],s:["note"],n:["plan","x"],w:["type","cause","fix"],k:["name","prob","fix"]},TRTOP=["issue","support"];
+const isTrF=(s,k)=>!!(TRF[s]&&TRF[s].includes(k));
+const needsTr=v=>typeof v==="string"&&v.trim().length>1&&v.length<4000&&/[A-Za-zÀ-ỹ가-힣ㄱ-ㅎ]/.test(v)&&!/^[A-Z0-9\s\-_/().,:;·×%#&+'"=<>[\]]+$/.test(v.trim());
+const TRX={busy:false,again:false,t:null,fail:0,pend:new Set(),warned:false};
+function disp(v){if(!needsTr(v)||!S||!S.tr)return v??"";const e=S.tr[v];if(!e)return v;if(e[lang]!=null)return e[lang];return v}
+function trCollect(){const out=new Set(),add=v=>{if(needsTr(v)){const e=S.tr[v];if(!(e&&(e[lang]!=null||e.src===lang)))out.add(v)}};
+  if(tab==="k")S.tasks.forEach(r=>TRF.k.forEach(k=>add(r[k])));
+  else{const D=day();Object.keys(TRF).forEach(s=>{if(s!=="k")(D[s]||[]).forEach(r=>TRF[s].forEach(k=>add(r[k])))});TRTOP.forEach(k=>add(D[k]));
+    dates().forEach(d=>(S.days[d].e||[]).forEach(x=>add(String(x.cause||"").replace(/\s*\(×\d+\)/,"").trim().toUpperCase())))}
+  return[...out].filter(v=>!TRX.pend.has(v))}
+async function trFetch(texts,tl){
+  if(typeof SV!=="undefined"&&SV.on){const r=await svFetch("/api/db/tr",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({texts,tl})},false);const j=await r.json();if(!j.ok)throw new Error(j.error||"tr");return j.out}
+  const one=async t=>{const r=await fetch("https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=auto&tl="+tl+"&q="+encodeURIComponent(t));const j=await r.json();return{t:(j[0]||[]).map(x=>x[0]).join(""),src:j[2]||""}};
+  const out=new Array(texts.length);try{out[0]=await one(texts[0])}catch(e){return null}
+  let nx=1;await Promise.all(Array.from({length:6},async()=>{while(nx<texts.length){const i=nx++;try{out[i]=await one(texts[i])}catch(e){out[i]=null}}}));return out}
+function trSchedule(){clearTimeout(TRX.t);TRX.t=setTimeout(trRun,250)}
+async function trRun(){
+  if(!S)return;if(TRX.busy){TRX.again=true;return}const tl=lang,list=trCollect();if(!list.length){trApplyDom();return}
+  TRX.busy=true;list.forEach(v=>TRX.pend.add(v));trStatus(list.length);let got=0;
+  try{for(let i=0;i<list.length;i+=40){const part=list.slice(i,i+40);let res=null;try{res=await trFetch(part,tl)}catch(e){res=null}
+      if(!res){TRX.fail++;if(!TRX.warned){TRX.warned=true;toast(T("trFail"),"err")}break}
+      part.forEach((v,j)=>{const x=res[j];if(!x||x.t==null)return;const e=S.tr[v]=S.tr[v]||{};const src=String(x.src||"").slice(0,2);if(src&&!e.src)e.src=src;e[tl]=src===tl?v:x.t;got++});
+      trStatus(Math.max(0,list.length-i-40))}}
+  finally{list.forEach(v=>TRX.pend.delete(v));TRX.busy=false;trStatus(0)}
+  if(got){trApplyDom();touch()}
+  if((TRX.again||lang!==tl)&&got){TRX.again=false;trSchedule()}else TRX.again=false}
+function trApplyDom(){const ae=document.activeElement;
+  document.querySelectorAll("#app [data-s][data-k]").forEach(el=>{const s=el.dataset.s,k=el.dataset.k;if(!isTrF(s,k)||el===ae)return;const r=(rows(s)||[])[+el.dataset.i];if(!r)return;const v=disp(r[k]);if(el.value!==v){el.value=v;if(el.tagName==="TEXTAREA")fitTA(el)}});
+  document.querySelectorAll("#app [data-top]").forEach(el=>{const k=el.dataset.top;if(!TRTOP.includes(k)||el===ae)return;const v=disp(day()[k]);if(el.value!==v){el.value=v;fitTA(el)}});
+  if(tab==="r")calc()}
+async function trEnsure(ds){const want=new Set();ds.forEach(d=>{const D=S.days[d];Object.keys(TRF).forEach(s=>{if(s!=="k")(D[s]||[]).forEach(r=>TRF[s].forEach(k=>{const v=r[k];if(needsTr(v)&&!(S.tr[v]&&(S.tr[v][lang]!=null||S.tr[v].src===lang)))want.add(v)}))});TRTOP.forEach(k=>{const v=D[k];if(needsTr(v)&&!(S.tr[v]&&S.tr[v][lang]!=null))want.add(v)})});
+  S.tasks.forEach(r=>TRF.k.forEach(k=>{const v=r[k];if(needsTr(v)&&!(S.tr[v]&&S.tr[v][lang]!=null))want.add(v)}));
+  const list=[...want];for(let i=0;i<list.length;i+=40){const part=list.slice(i,i+40);let res=null;try{res=await trFetch(part,lang)}catch(e){}if(!res)break;part.forEach((v,j)=>{const x=res[j];if(!x)return;const e=S.tr[v]=S.tr[v]||{};const src=String(x.src||"").slice(0,2);if(src&&!e.src)e.src=src;e[lang]=src===lang?v:x.t})}}
+function trStatus(n){const el=document.getElementById("trSt");if(el){el.textContent=n?"🌐 "+T("trBusy",{n}):"";el.style.display=n?"":"none"}}
+function trPrune(){if(!S.tr)return;const keep=new Set(),add=v=>{if(typeof v==="string")keep.add(v)};
+  Object.values(S.days).forEach(D=>{Object.keys(TRF).forEach(s=>(D[s]||[]).forEach(r=>TRF[s].forEach(k=>add(r[k]))));TRTOP.forEach(k=>add(D[k]));(D.e||[]).forEach(x=>add(String(x.cause||"").replace(/\s*\(×\d+\)/,"").trim().toUpperCase()))});
+  S.tasks.forEach(r=>TRF.k.forEach(k=>add(r[k])));Object.keys(S.tr).forEach(k=>{if(!keep.has(k))delete S.tr[k]})}
 const PLANT3_DEFAULT=["SM-A576B ASSY CAM DECO","UPPER CAM UW_ASSY","UPPER CAM WIDE_ASSY","SM-F971U ASSY CAM DECO MID","SM-F976U ASSY CAM DECO MID"];
 const STOPR_DEFAULT=["A576 CAM => 3공장","Q8 => 3공장","F971 => 3공장","F976 => 3공장","UPPER CAM => 3공장","A58 => 4공장"];
 const FLAG={ko:'<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#fff"/><circle cx="15" cy="10" r="5" fill="#c60c30"/><path d="M10 10a5 5 0 0 0 10 0z" fill="#003478"/></svg>',vi:'<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#da251d"/><path d="M15 4l1.8 5.5h5.7l-4.6 3.4 1.8 5.4-4.7-3.3-4.7 3.3 1.8-5.4-4.6-3.4h5.7z" fill="#ff0"/></svg>',en:'<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#fff"/><path d="M0 2h30M0 6h30M0 10h30M0 14h30M0 18h30" stroke="#b22234" stroke-width="2"/><rect width="13" height="10.5" fill="#3c3b6e"/></svg>'};
@@ -269,7 +318,7 @@ function toV3(st){
   if(!st||typeof st!=="object"||!st.days) return null;
   const flat = !Array.isArray(st.tasks) || Object.values(st.days).some(d=>d&&Object.keys(d).some(k=>/^[pqesnw]\d+[a-zA-Z]/.test(k)));
   const o = flat ? fromV2(st) : clone(st);
-  o.tasks=o.tasks||[]; o.pdfs=o.pdfs||{}; o.photos=o.photos||{}; o.settings=o.settings||{}; o.savedAt=o.savedAt||0;
+  o.tasks=o.tasks||[]; o.tr=o.tr||{}; o.pdfs=o.pdfs||{}; o.photos=o.photos||{}; o.settings=o.settings||{}; o.savedAt=o.savedAt||0;
   if(!Object.keys(o.days).length) o.days[ymd(new Date())]={basis:BASIS[0]};
   if(!o.cur||!o.days[o.cur]) o.cur=Object.keys(o.days).sort().pop();
   Object.values(o.days).forEach(D=>(D&&D.p||[]).forEach(r=>{if(r&&(r.iss!==undefined||r.issA!==undefined)){
@@ -294,7 +343,7 @@ async function getFile(id){return (await DB.get("files",id))||memFiles[id]||(typ
 async function delFile(id){delete memFiles[id];await DB.del("files",id);if(typeof svDelFile==="function")svDelFile(id)}
 
 let persistT=null, dirtySnap=false, lastHtmlAt=0;
-function persist(){ S.savedAt=Date.now(); try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){} dirtySnap=true; updateSaved(); scheduleAutoHtml(); if(typeof svSchedule==="function")svSchedule(); }
+function persist(){ if(typeof trPrune==="function")trPrune(); S.savedAt=Date.now(); try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){} dirtySnap=true; updateSaved(); scheduleAutoHtml(); if(typeof svSchedule==="function")svSchedule(); }
 function touch(){ clearTimeout(persistT); persistT=setTimeout(persist,350); }
 async function snapshot(label){
   await DB.put("versions",{id:Date.now()+Math.random(),at:Date.now(),label,nDays:Object.keys(S.days).length,data:JSON.stringify(S)});
@@ -362,7 +411,7 @@ function head(){
     <button data-act="next" title="${esc(T("nextDay"))}"${ix>=ds.length-1?" disabled":""}>${ic("right")}</button>
     <span class="chip">${esc(T("nDays",{n:daysOf(cm).length}))}</span>
     <button class="chip" data-act="pdfs">${ic("clip")} PDF ${(S.pdfs[S.cur]||[]).length}</button>
-    <span class="sp"></span><span class="saved" id="savedTxt"></span>
+    <span class="sp"></span><span class="saved" id="trSt" style="display:none"></span><span class="saved" id="savedTxt"></span>
     ${gb("view",set.view?"pen":"eye",set.view?"viewEdit":"viewReport",set.view?"on":"")}
     ${gb("collapse",set.collapsed?"downc":"up",set.collapsed?"expand":"collapse")}
   </div>`;
@@ -387,7 +436,7 @@ function cell(s,i,c,v){const[k,,t,o]=c,a=`data-s="${s}" data-i="${i}" data-k="${
 const thw=t=>t==="num"||t==="calc"?"width:105px":t==="sel"?"width:110px":t==="time"?"width:95px":t==="date"?"width:135px":"";
 function sec(s){const d=SEC[s],R=rows(s);
   let h=`<section class="card" data-sec="${s}"${s==="s"?' id="shipSec"':""}><h2>${d.no?`<span class="no">${d.no}</span>`:""}${T(d.t)}<span class="sub" id="sum_${s}"></span>${s==="s"?`<span class="hsp"></span><button class="imp" data-act="shipImp">${ic("upload")} ${esc(T("shipImp"))}</button>`:""}</h2><div class="sc"><table><tr>${d.cols.map(c=>`<th style="${s==="n"&&c[0]==="m"?"width:100px":s==="p"&&c[0]==="item"?"width:210px":s==="s"&&c[0]==="item"?"width:150px":s==="s"&&c[0]==="name"?"width:110px":s==="s"&&c[2]!=="area"?"width:120px":thw(c[2])}">${T(c[1])}</th>`).join("")}<th class="x"></th></tr>`;
-  R.forEach((r,i)=>{let row=d.cols.map(c=>cell(s,i,c,r[c[0]])).join("");
+  R.forEach((r,i)=>{let row=d.cols.map(c=>cell(s,i,c,isTrF(s,c[0])?disp(r[c[0]]):r[c[0]])).join("");
     if(s==="s"&&i>0&&String(r.item||"").trim()&&String(r.item).trim()===String(R[i-1].item||"").trim())row=row.replace('<td class="y">','<td class="y dup">');
     h+=`<tr>${row}<td class="x"><button data-act="del" data-s="${s}" data-i="${i}" title="${T("delRow")}">×</button></td></tr>`});
   if(s==="p")h+=`<tr class="t"><td colspan="2">${T("total")}</td><td id="pTp"></td><td id="pTa"></td><td id="pTr"></td><td colspan="2"></td><td class="x"></td></tr>`;
@@ -399,7 +448,7 @@ function render0(){
   const m=(l,k,o)=>`<div><label>${T(l)}</label>${o?`<select data-top="${k}">${(o.includes(D[k])||!D[k]?o:[...o,D[k]]).map(x=>`<option value="${esc(x)}"${x===D[k]?" selected":""}>${esc(BASIS.indexOf(x)>=0?T("b"+BASIS.indexOf(x)):x)}</option>`).join("")}</select>`:`<input data-top="${k}" value="${esc(D[k])}">`}</div>`;
   $("app").innerHTML=`<div class="meta"><div><label>${T("date")}</label><input type="date" id="repDate" value="${S.cur}"></div>${m("writer","writer")}${m("checker","checker")}${m("basis","basis",BASIS)}</div>`
    +DAY_SECS.map(sec).join("")
-   +`<section class="card"><h2><span class="no">07</span>${T("s7")}</h2><div class="two"><div><label>${T("issue7")}</label><textarea data-top="issue">${esc(D.issue)}</textarea></div><div><label>${T("support")}</label><textarea data-top="support">${esc(D.support)}</textarea></div></div></section>
+   +`<section class="card"><h2><span class="no">07</span>${T("s7")}</h2><div class="two"><div><label>${T("issue7")}</label><textarea data-top="issue">${esc(disp(D.issue))}</textarea></div><div><label>${T("support")}</label><textarea data-top="support">${esc(disp(D.support))}</textarea></div></div></section>
      <section class="card"><h2>${T("top")}</h2><div class="sc"><table class="top" id="top"></table></div></section>`;
   auto(); calc();
 }
@@ -424,7 +473,7 @@ function calc(){
   tid("sum_e",h||n?T("sumE",{h:(Math.round(h*100)/100).toFixed(2),n}):"");
   const m={};dates().forEach(d=>(S.days[d].e||[]).forEach(x=>{const c=String(x.cause||"").replace(/\s*\(×\d+\)/,"").trim().toUpperCase();if(!c)return;m[c]=m[c]||{h:0,n:0};m[c].h+=num(x.h);m[c].n+=num(x.cnt)||1}));
   const R=Object.entries(m).sort((a,b)=>b[1].h-a[1].h).slice(0,5),mx=R[0]?R[0][1].h||1:1;
-  const top=$("top"); if(top) top.innerHTML=`<tr><th style="width:60px">${T("rank")}</th><th>${T("stopCause")}</th><th style="width:140px">${T("stopH")}</th><th style="width:90px">${T("cnt")}</th><th style="width:30%"></th></tr>`+(R.length?R.map((x,i)=>`<tr><td style="text-align:center">${i+1}</td><td>${esc(x[0])}</td><td style="text-align:right">${x[1].h.toFixed(2)}</td><td style="text-align:right">${x[1].n}</td><td><div class="bg"><i style="width:${x[1].h/mx*100}%"></i></div></td></tr>`).join(""):`<tr><td colspan="5" class="empty">–</td></tr>`);
+  const top=$("top"); if(top) top.innerHTML=`<tr><th style="width:60px">${T("rank")}</th><th>${T("stopCause")}</th><th style="width:140px">${T("stopH")}</th><th style="width:90px">${T("cnt")}</th><th style="width:30%"></th></tr>`+(R.length?R.map((x,i)=>`<tr><td style="text-align:center">${i+1}</td><td>${esc(disp(x[0]))}</td><td style="text-align:right">${x[1].h.toFixed(2)}</td><td style="text-align:right">${x[1].n}</td><td><div class="bg"><i style="width:${x[1].h/mx*100}%"></i></div></td></tr>`).join(""):`<tr><td colspan="5" class="empty">–</td></tr>`);
 }
 
 /* =====================================================================
@@ -719,7 +768,7 @@ const CL=n=>{let s="";while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;
 function put(ws,r,c,span,val,o={}){const cell=ws.getCell(r,c);if(span>1)ws.mergeCells(r,c,r,c+span-1);cell.value=val;cell.font={name:"Malgun Gothic",size:o.size||10,bold:!!o.bold,color:{argb:o.color||"FF1F2933"}};cell.alignment={vertical:o.v||"middle",horizontal:o.h||"left",wrapText:true};if(o.fill)cell.fill={type:"pattern",pattern:"solid",fgColor:{argb:o.fill}};if(o.nf)cell.numFmt=o.nf;for(let i=0;i<span;i++)ws.getCell(r,c+i).border=BD}
 function secX(ws,r,s,R,sum){const d=SEC[s],sp=SP[s],pos={};put(ws,r,2,12,(d.no?d.no+"  ":"")+T(d.t)+(sum?"   ·   "+sum:""),{fill:NAVY,color:"FFFFFFFF",bold:1,size:12});ws.getRow(r).height=24;r++;
   let c=2;d.cols.forEach((col,i)=>{pos[col[0]]=c;put(ws,r,c,sp[i],T(col[1]),{fill:"FF2E4657",color:"FFFFFFFF",bold:1,h:"center"});c+=sp[i]});ws.getRow(r).height=26;r++;const f0=r;
-  R.forEach((row,ri)=>{c=2;let lines=1;d.cols.forEach((col,i)=>{const[k,,t]=col;let v=row[k],o={fill:YEL};
+  R.forEach((row,ri)=>{c=2;let lines=1;d.cols.forEach((col,i)=>{const[k,,t]=col;let v=isTrF(s,k)?disp(row[k]):row[k],o={fill:YEL};if(t==="sel"&&v)v=lab(v);
     if(t==="calc"){o.fill=GRY;o.h="right";if(k==="_n"){v=ri+1;o.h="center"}else if(s==="s"&&k==="_d"){v={formula:`${CL(pos.act)}${r}-${CL(pos.plan)}${r}`};o.nf='#,##0;[Red](#,##0);"-"';if(num(row.act)<num(row.plan))o.fill="FFFBD3D6"}else if(s==="s"){v={formula:`IF(${CL(pos.plan)}${r}=0,"",${CL(pos.act)}${r}/${CL(pos.plan)}${r})`};o.nf="0.0%";if(num(row.plan)&&num(row.act)<num(row.plan)){o.fill="FFFBD3D6";o.color="FFB3261E"}}else{const[a,b,nf]=RATE[s];v={formula:`IFERROR(${CL(pos[a])}${r}/${CL(pos[b])}${r},0)`};o.nf=nf}}
     else if(t==="num"){const n=parseFloat(String(v??"").replace(/,/g,""));if(!isNaN(n)&&String(v).trim()!=="")v=n;o.h="right";o.nf=s==="s"?'#,##0;(#,##0);"-"':(NF[s]||{})[k]}
     else if(s==="s"&&(k==="item"||k==="name"))o.h="center";
@@ -736,8 +785,8 @@ function daySheet(wb,d){const D=S.days[d],ws=ws0(wb,d);put(ws,1,2,12,T("title"),
   const bi=BASIS.indexOf(D.basis);[[2,"date",d],[5,"writer",D.writer],[8,"checker",D.checker],[11,"basis",bi>=0?T("b"+bi):D.basis]].forEach(([c,k,v])=>{put(ws,3,c,1,T(k),{fill:MINT,bold:1});put(ws,3,c+1,2,v||"",{fill:YEL})});ws.getRow(3).height=26;let r=5;
   DAY_SECS.forEach(s=>{const R=live(D[s]);let sum="";if(s==="e"){let h=0,n=0;R.forEach(x=>{h+=num(x.h);n+=num(x.cnt)||1});if(n)sum=T("sumE",{h:h.toFixed(2),n})}r=secX(ws,r,s,R.length?R:[{}],sum)});
   put(ws,r,2,12,"07  "+T("s7"),{fill:NAVY,color:"FFFFFFFF",bold:1,size:12});r++;put(ws,r,2,6,T("issue7"),{fill:"FF2E4657",color:"FFFFFFFF",bold:1,h:"center"});put(ws,r,8,6,T("support"),{fill:"FF2E4657",color:"FFFFFFFF",bold:1,h:"center"});r++;
-  for(const[c,v]of[[2,D.issue],[8,D.support]]){ws.mergeCells(r,c,r+3,c+5);const x=ws.getCell(r,c);x.value=v||"";x.alignment={vertical:"top",wrapText:true};x.fill={type:"pattern",pattern:"solid",fgColor:{argb:YEL}};x.font={name:"Malgun Gothic",size:10};for(let rr=r;rr<=r+3;rr++)for(let cc=c;cc<=c+5;cc++)ws.getCell(rr,cc).border=BD}}
-async function exportXls(scope){if(!await lib("ExcelJS",EJS))return;const ds=scope==="month"?daysOf(monthOf(S.cur)):[S.cur],wb=new ExcelJS.Workbook();wb.creator="조립팀";
+  for(const[c,v]of[[2,disp(D.issue)],[8,disp(D.support)]]){ws.mergeCells(r,c,r+3,c+5);const x=ws.getCell(r,c);x.value=v||"";x.alignment={vertical:"top",wrapText:true};x.fill={type:"pattern",pattern:"solid",fgColor:{argb:YEL}};x.font={name:"Malgun Gothic",size:10};for(let rr=r;rr<=r+3;rr++)for(let cc=c;cc<=c+5;cc++)ws.getCell(rr,cc).border=BD}}
+async function exportXls(scope){if(!await lib("ExcelJS",EJS))return;const ds=scope==="month"?daysOf(monthOf(S.cur)):[S.cur],wb=new ExcelJS.Workbook();wb.creator="조립팀";await trEnsure(ds);
   ds.forEach(d=>daySheet(wb,d));const wk=ws0(wb,T("tabK").slice(0,28));put(wk,1,2,12,T("sk"),{fill:NAVY,color:"FFFFFFFF",bold:1,size:15,h:"center"});wk.getRow(1).height=30;const kt=live(S.tasks);secX(wk,3,"k",kt.length?kt:[{}]);
   const wd=wb.addWorksheet("DATA");wd.addRow(["date","key","value"]);dates().forEach(d=>wd.addRow([d,"JSON",JSON.stringify(S.days[d])]));wd.addRow(["TASKS","JSON",JSON.stringify(S.tasks)]);
   const buf=await wb.xlsx.writeBuffer();dl(`조립팀_일일업무보고_${scope==="month"?monthOf(S.cur):S.cur}.xlsx`,new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));toast(T("exported"),"ok")}
@@ -821,6 +870,7 @@ $("app").addEventListener("input",e=>{const t=e.target,d=t.dataset;
 $("app").addEventListener("change",e=>{const t=e.target;if(t.id==="repDate")renameDay(t.value)});
 document.addEventListener("focusin",e=>{const t=e.target;if(t.dataset&&t.dataset.num)t.value=t.value.replace(/,/g,"")});
 document.addEventListener("focusout",e=>{const t=e.target,d=t.dataset||{};
+  if((d.s!==undefined&&isTrF(d.s,d.k))||(d.top&&TRTOP.includes(d.top)))trSchedule();   // new / edited text: the translator detects its language
   if(d.num)t.value=fmtNum(t.value);
   if(d.tm){const nv=normTime(t.value),r=rows(d.s)[+d.i];if(nv!==t.value)t.value=nv;r[d.k]=nv;if(d.s==="e")stopHours(r,d.i);touch();calc()}});
 window.addEventListener("resize",auto);
@@ -890,7 +940,7 @@ function mcApplySel(){
   if(last<n.r1){MC.sel=null;return}
   for(let r=n.r1;r<=last;r++){const tr=trs[r+1];if(!tr)continue;for(let c=n.c1;c<=n.c2;c++){const td=tr.cells[c];if(td)td.classList.add("csel")}}}
 function mcSetSel(a,b){MC.sel=mcNorm({s:a.s,r1:a.r,r2:b.r,c1:a.c,c2:b.c});mcApplySel()}
-function render(){const k=S.cur+"|"+tab;if(MC.key!==k){MC.sel=null;MC.key=k}render0();mcApplySel()}
+function render(){const k=S.cur+"|"+tab;if(MC.key!==k){MC.sel=null;MC.key=k}render0();mcApplySel();trSchedule()}
 
 /* ---- parse / convert ---- */
 function mcParse(t){
@@ -949,7 +999,7 @@ function mcApply(s,r0,c0,grid){
 /* ---- read / clear selection ---- */
 function mcGrid(){
   const n=mcNorm(MC.sel),R=rows(n.s)||[],cols=SEC[n.s].cols,ed=mcEd(n.s,n.c1,n.c2),g=[];
-  for(let r=n.r1;r<=Math.min(n.r2,R.length-1);r++)g.push(ed.map(c=>{const col=cols[c];let v=R[r][col[0]];v=v==null?"":String(v);return col[2]==="sel"?lab(v):v}));
+  for(let r=n.r1;r<=Math.min(n.r2,R.length-1);r++)g.push(ed.map(c=>{const col=cols[c];let v=R[r][col[0]];v=v==null?"":String(v);return col[2]==="sel"?lab(v):isTrF(n.s,col[0])?disp(v):v}));
   return{g,nc:ed.length}}
 function mcCopy(){
   const{g,nc}=mcGrid();if(!nc||!g.length)return null;
