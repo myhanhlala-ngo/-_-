@@ -148,6 +148,14 @@ section.card .sc{border:1.5px solid var(--cb);border-radius:4px}
 .trb{border:1px solid #47677c;border-radius:8px;padding:4px 10px;background:#10202b;color:#cfe3f1;font-size:12px;font-weight:600;cursor:pointer;margin-left:6px;white-space:nowrap}.trb.on{background:#1d5f8a;border-color:#6fb3e0;color:#fff}
 @media screen{td.y:has(.trd){box-shadow:inset 3px 0 0 #6fb3e0}.two textarea.trd{box-shadow:inset 3px 0 0 #6fb3e0}}
 @media print{.trb{display:none}}
+@media screen{
+section.card .sc{max-height:min(540px,64vh);overflow:auto;scrollbar-width:thin;scrollbar-color:#8aa4b8 transparent}
+section.card .sc::-webkit-scrollbar{width:10px;height:10px}section.card .sc::-webkit-scrollbar-thumb{background:#8aa4b8;border-radius:6px;border:2px solid transparent;background-clip:content-box}
+section.card .sc th{position:sticky;top:0;z-index:3}
+section.card .sc tr.t td{position:sticky;bottom:0;z-index:3;box-shadow:0 -1px 0 var(--cb)}section.card .sc tr.t td.x{background:var(--card)}
+section.card .sc.more{box-shadow:inset 0 -14px 10px -12px rgba(23,43,58,.35)}
+}
+@media print{section.card .sc{max-height:none!important;overflow:visible!important}}
 </style>
 </head>
 <body>
@@ -215,7 +223,7 @@ shipOcr:["사진 판독 중… {p}%","Đang đọc ảnh… {p}%","Reading photo
 shipXlsNote:["엑셀 파일에서 읽은 값입니다.","Số liệu đọc từ file Excel.","Values read from the Excel file."],shipNone:["출하 표를 찾지 못했습니다: {f}","Không tìm thấy bảng xuất hàng trong: {f}","No shipping table found in: {f}"],
 shipDone:["출하 {n}개 품목 → {d}","xuất hàng {n} mã → báo cáo {d}","shipping {n} items → {d}"],tgFile:["{d} – 파일/사진에 적힌 날짜","{d} – ngày ghi trên file / ảnh","{d} – date on the file / photo"],
 ocrFail:["사진 판독 엔진을 불러오지 못했습니다. 인터넷 연결을 확인하세요.","Không tải được bộ đọc ảnh (OCR). Kiểm tra kết nối Internet.","Could not load the OCR engine. Check your connection."],
-shipChkOk:["사진의 TOTAL과 일치 ✓ (계획 {p} · 실적 {a})","Khớp với dòng TOTAL trên ảnh ✓ (KH {p} · TT {a})","Matches the TOTAL row in the photo ✓ (plan {p} · actual {a})"],shipChkBad:["사진의 TOTAL과 다름 – 계획 {p} · 실적 {a}. 빨간 셀을 확인하세요","Chưa khớp dòng TOTAL trên ảnh – KH {p} · TT {a}. Hãy kiểm tra lại số","Differs from the TOTAL row in the photo – plan {p} · actual {a}. Please check"],htmlDone:["데이터가 포함된 HTML을 다운로드했습니다","Đã tải file HTML (gồm toàn bộ dữ liệu)","Downloaded HTML with all data"],savedToast:["저장했습니다","Đã lưu","Saved"]};
+shipChkOk:["사진의 TOTAL과 일치 ✓ (계획 {p} · 실적 {a})","Khớp với dòng TOTAL trên ảnh ✓ (KH {p} · TT {a})","Matches the TOTAL row in the photo ✓ (plan {p} · actual {a})"],shipChkBad:["사진의 TOTAL과 다름 – 계획 {p} · 실적 {a}. 빨간 셀을 확인하세요","Chưa khớp dòng TOTAL trên ảnh – KH {p} · TT {a}. Hãy kiểm tra lại số","Differs from the TOTAL row in the photo – plan {p} · actual {a}. Please check"],pmTitle:["01 표시 방식","Cách hiển thị mục 01","Section 01 layout"],pmModel:["모델별 한 행 (원본 파일과 동일)","Mỗi model 1 dòng (giống file gốc)","One row per model (same as the original file)"],pmPlant:["공장별 합계 한 행","Gộp 1 dòng / xưởng","One total row per plant"],plantSum:["{f}: {a}/{p} ({r})","{f}: {a}/{p} ({r})","{f}: {a}/{p} ({r})"],htmlDone:["데이터가 포함된 HTML을 다운로드했습니다","Đã tải file HTML (gồm toàn bộ dữ liệu)","Downloaded HTML with all data"],savedToast:["저장했습니다","Đã lưu","Saved"]};
 const LI={ko:0,vi:1,en:2};
 let lang="vi";
 const T=(k,v)=>{let s=W[k]?W[k][LI[lang]]:k;if(v)s=s.replace(/\{(\w+)\}/g,(m,x)=>v[x]??"");return s};
@@ -428,6 +436,8 @@ function calc(){
   {const df=sa-sp,tr=sp?sa/sp*100:null;tid("sTp",sAny?fmt(sp):"-");tid("sTa",sAny?fmt(sa):"-");const d1=$("sTd");if(d1){d1.textContent=sAny?dfmt(df):"-";d1.className=df<0?"neg":""}
     const r1=$("sTr");if(r1){r1.textContent=tr===null?"":tr.toFixed(1)+"%";r1.className=tr!==null&&tr<100?"neg":""}}
   D.e.forEach(r=>{h+=num(r.h);n+=r.h||r.eq||r.cause?(num(r.cnt)||1):0});
+  {const by={};D.p.forEach(r=>{if(!r.f)return;const b=by[r.f]=by[r.f]||{p:0,a:0,n:0};b.p+=num(r.plan);b.a+=num(r.act);b.n++});
+   const multi=Object.values(by).some(b=>b.n>1);tid("sum_p",multi?FAC.filter(f=>by[f]).map(f=>T("plantSum",{f:lab(f),a:fmt(by[f].a),p:fmt(by[f].p),r:by[f].p?(by[f].a/by[f].p*100).toFixed(1)+"%":"-"})).join("  ·  "):"")}
   tid("pTp",fmt(pl));tid("pTa",fmt(ac));const tr=$("pTr");if(tr){tr.textContent=pct(ac,pl);tr.className=rateCls(pl?ac/pl*100:null)}
   tid("sum_e",h||n?T("sumE",{h:(Math.round(h*100)/100).toFixed(2),n}):"");
   const m={};dates().forEach(d=>(S.days[d].e||[]).forEach(x=>{const c=String(x.cause||"").replace(/\s*\(×\d+\)/,"").trim().toUpperCase();if(!c)return;m[c]=m[c]||{h:0,n:0};m[c].h+=num(x.h);m[c].n+=num(x.cnt)||1}));
@@ -482,8 +492,8 @@ const rulesTA=(name,list)=>`<textarea name="${name}" rows="5" style="font:12px/1
 const readRules=t=>String(t||"").split("\n").map(x=>x.trim()).filter(Boolean);
 
 /* ---- production plan (생산계획상세조회 P4810QA40) → 01 ---- */
-function findProd(wb){for(const n of wb.SheetNames){const rows=grid(wb,n);for(let i=0;i<Math.min(15,rows.length);i++){const h=rows[i].map(x=>String(x).trim()),c=k=>h.indexOf(k);if(c("작업장명")>=0&&c("당일계획")>=0&&c("생산양품량")>=0)return{rows,hi:i,c:{date:c("계획일자"),ws:c("작업장명"),group:c("품목그룹"),plan:c("당일계획"),act:c("생산양품량"),reason:c("미달성사유"),detail:c("상세사유"),kind:c("구분")}}}}return null}
-function prodRecs(ps){const g=(r,k)=>ps.c[k]>=0?r[ps.c[k]]:"";return ps.rows.slice(ps.hi+1).map(r=>({date:toD(g(r,"date")),ws:NORM(g(r,"ws")),group:String(g(r,"group")).trim(),kind:String(g(r,"kind")).trim(),plan:num(g(r,"plan")),act:num(g(r,"act")),reason:String(g(r,"reason")).trim(),detail:String(g(r,"detail")).trim()})).filter(r=>r.date&&(r.ws==="ASSEMBLY"||r.ws==="4F ASSEMBLY"))}
+function findProd(wb){for(const n of wb.SheetNames){const rows=grid(wb,n);for(let i=0;i<Math.min(15,rows.length);i++){const h=rows[i].map(x=>String(x).trim()),c=k=>h.indexOf(k);if(c("작업장명")>=0&&c("당일계획")>=0&&c("생산양품량")>=0)return{rows,hi:i,c:{date:c("계획일자"),ws:c("작업장명"),group:c("품목그룹"),plan:c("당일계획"),act:c("생산양품량"),reason:c("미달성사유"),detail:c("상세사유"),kind:c("구분"),code:c("품목코드")}}}}return null}
+function prodRecs(ps){const g=(r,k)=>ps.c[k]>=0?r[ps.c[k]]:"";return ps.rows.slice(ps.hi+1).map(r=>({date:toD(g(r,"date")),ws:NORM(g(r,"ws")),group:String(g(r,"group")).trim(),kind:String(g(r,"kind")).trim(),code:String(g(r,"code")).trim(),plan:num(g(r,"plan")),act:num(g(r,"act")),reason:String(g(r,"reason")).trim(),detail:String(g(r,"detail")).trim()})).filter(r=>r.date&&(r.ws==="ASSEMBLY"||r.ws==="4F ASSEMBLY"))}
 function plantOf(r,rules){if(r.ws==="4F ASSEMBLY")return"4공장";const f=NORM(r.group+" "+r.kind),k=NORM(r.kind);return rules.some(x=>{const q=NORM(x);return q&&(f.includes(q)||k.includes(q))})?"3공장":"1공장"}
 function prodSum(recs,rules){const P={};FAC.forEach(k=>P[k]={plan:0,act:0,n:0,miss:[],items:new Set(),rsn:[],rdt:[]});const bm={};
   recs.forEach(r=>{const p=plantOf(r,rules);P[p].plan+=r.plan;P[p].act+=r.act;P[p].n++;{const lb=p==="4공장"?r.ws:(r.group+" "+r.kind).replace(/\s+/g," ").trim();if(lb)P[p].items.add(lb)}const key=p+"|"+r.group+"|"+r.kind,m=bm[key]=bm[key]||{p,group:r.group,kind:r.kind,plan:0,act:0,rs:new Set(),dt:new Set()};m.plan+=r.plan;m.act+=r.act;if(r.reason)m.rs.add(r.reason);if(r.detail)m.dt.add(r.detail)});
@@ -491,6 +501,17 @@ function prodSum(recs,rules){const P={};FAC.forEach(k=>P[k]={plan:0,act:0,n:0,mi
   FAC.forEach(p=>{const w=ms.filter(m=>m.p===p&&(m.rs.size||m.dt.size)),pre=w.length>1;w.forEach(m=>{const tg=pre?m.group+": ":"";if(m.rs.size)P[p].rsn.push(tg+[...m.rs].join(" / "));if(m.dt.size)P[p].rdt.push(tg+[...m.dt].join(" / "))})});return P}
 function applyProd(D,P,file,pd){const old=live(D.p),pl=FAC.filter(p=>P[p].n>0);if(!pl.length)return;
   D.p=pl.map(p=>{const v=P[p],o=old.find(r=>r.f===p)||{},r={f:p,plan:String(v.plan),act:String(v.act)};[["item",[...v.items]],["rsn",v.rsn],["rdt",v.rdt]].forEach(([t,a])=>{const au=a.join(t==="item"?"\n":"; ");r[t]=o[t]&&o[t]!==o[t+"A"]?o[t]:au;r[t+"A"]=au});return r});
+  D.prodSrc={file,date:pd,at:Date.now()}}
+/* one row per model / item code, in the same order as the original MES file (plants kept together) */
+function prodModels(recs,rules){const G=[],idx={};
+  recs.forEach(r=>{const p=plantOf(r,rules),key=[p,r.group,r.kind,r.code].join("|");let g=idx[key];
+    if(!g){g=idx[key]={p,key,group:r.group,kind:r.kind,code:r.code,ws:r.ws,plan:0,act:0,rs:new Set(),dt:new Set()};G.push(g)}
+    g.plan+=r.plan;g.act+=r.act;if(r.reason)g.rs.add(r.reason);if(r.detail)g.dt.add(r.detail)});
+  return FAC.flatMap(p=>G.filter(g=>g.p===p))}
+function applyProdModel(D,G,file,pd){if(!G.length)return;const old=live(D.p);
+  D.p=G.map(g=>{const name=(g.group||g.kind?(g.group+" "+g.kind):g.ws).replace(/\s+/g," ").trim(),label=name+(g.code?"\n"+g.code:"");
+    const o=old.find(r=>r._k===g.key)||{},r={f:g.p,_k:g.key,plan:String(g.plan),act:String(g.act)};
+    [["item",label],["rsn",[...g.rs].join(" / ")],["rdt",[...g.dt].join(" / ")]].forEach(([t,au])=>{r[t]=o[t]&&o[t]!==o[t+"A"]?o[t]:au;r[t+"A"]=au});return r});
   D.prodSrc={file,date:pd,at:Date.now()}}
 async function importProduction(ps,fileName,rep){
   const recs=prodRecs(ps);if(!recs.length){toast(T("prodNone"),"err");return false}
@@ -501,6 +522,7 @@ async function importProduction(ps,fileName,rep){
     <label class="fld"><span>${T("dataDate")}</span><select name="date" id="pdDate">${ds.map(d=>{const c=of(d),pl=c.reduce((a,x)=>a+x.plan,0),ac=c.reduce((a,x)=>a+x.act,0);return`<option value="${d}"${d===def?" selected":""}>${esc(fmtDayLong(d))} — ${fmt(ac)}/${fmt(pl)} (${pl?(ac/pl*100).toFixed(1):0}%)</option>`}).join("")}</select></label>
     <div id="pdPrev" style="margin-bottom:12px">${preview(def,rules)}</div><div class="fld" id="pdTg">${tgHTML(def)}</div>
     ${ds.length>1?`<label class="radio"><input type="checkbox" name="all" value="1" id="pdAll"><span>${esc(T("allDays",{n:ds.length}))}</span></label>`:""}
+    <div class="fld" style="margin-top:10px"><span>${esc(T("pmTitle"))}</span>${["model","plant"].map(v=>`<label class="radio"><input type="radio" name="pm" value="${v}"${(S.settings.prodMode||"model")===v?" checked":""}><span>${esc(T(v==="model"?"pmModel":"pmPlant"))}</span></label>`).join("")}</div>
     <label class="fld" style="margin-top:10px"><span>${esc(T("prodRules"))}</span>${rulesTA("rules",rules)}</label><div class="note">${esc(T("keepNote"))}</div>`,
     actions:[{v:"no",label:T("cancel")},{v:"ok",label:T("apply"),cls:"pri"}],
     onMount:m=>{const sel=m.querySelector("#pdDate"),ta=m.querySelector("[name=rules]"),all=m.querySelector("#pdAll"),upd=()=>m.querySelector("#pdPrev").innerHTML=preview(sel.value,readRules(ta.value));
@@ -508,7 +530,8 @@ async function importProduction(ps,fileName,rep){
   if(r.v!=="ok")return false;
   rules=readRules(r.data.rules);S.settings.plant3=rules;
   const plan=r.data.all==="1"?ds.map(d=>[d,d]):[[r.data.date||def,r.data.tg||r.data.date||def]];
-  plan.forEach(([d,tg])=>{if(!S.days[tg])S.days[tg]=makeDay(tg);applyProd(S.days[tg],prodSum(of(d),rules),fileName,d)});
+  const pm=S.settings.prodMode=r.data.pm||"model";
+  plan.forEach(([d,tg])=>{if(!S.days[tg])S.days[tg]=makeDay(tg);if(pm==="model")applyProdModel(S.days[tg],prodModels(of(d),rules),fileName,d);else applyProd(S.days[tg],prodSum(of(d),rules),fileName,d)});
   S.cur=plan[plan.length-1][1];rep.push(r.data.all==="1"?T("prodMulti",{n:plan.length}):T("prodDone",{p:fmtDayLong(plan[0][0]),t:fmtDayLong(plan[0][1])}));return true}
 
 /* ---- STOP LINE report → 03 ---- */
@@ -1205,6 +1228,10 @@ function trAbsorb(){if(S&&S.trc&&S.trc!==TRC)trMerge(S.trc);if(S)S.trc=TRC}
  const c0=calc;calc=function(){c0();trApply()};
  const p0=persist;persist=function(){trTrim();if(S)S.trc=TRC;p0()};}
 try{trMerge(JSON.parse(localStorage.getItem("assy-tr-cache")||"null"))}catch(e){}
+
+/* sections with long content: vertical scroll inside each section, header + total stay visible */
+function scMark(){document.querySelectorAll("#app section.card .sc").forEach(sc=>{sc.classList.toggle("more",sc.scrollHeight-sc.clientHeight-sc.scrollTop>4);if(!sc._scb){sc._scb=1;sc.addEventListener("scroll",()=>sc.classList.toggle("more",sc.scrollHeight-sc.clientHeight-sc.scrollTop>4),{passive:true})}})}
+{const r1=render;render=function(){r1();requestAnimationFrame(scMark)};window.addEventListener("resize",scMark);document.addEventListener("input",()=>requestAnimationFrame(scMark))}
 
 (async function init(){
   await DB.open();
