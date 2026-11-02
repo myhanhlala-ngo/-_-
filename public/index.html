@@ -215,7 +215,7 @@ shipOcr:["사진 판독 중… {p}%","Đang đọc ảnh… {p}%","Reading photo
 shipXlsNote:["엑셀 파일에서 읽은 값입니다.","Số liệu đọc từ file Excel.","Values read from the Excel file."],shipNone:["출하 표를 찾지 못했습니다: {f}","Không tìm thấy bảng xuất hàng trong: {f}","No shipping table found in: {f}"],
 shipDone:["출하 {n}개 품목 → {d}","xuất hàng {n} mã → báo cáo {d}","shipping {n} items → {d}"],tgFile:["{d} – 파일/사진에 적힌 날짜","{d} – ngày ghi trên file / ảnh","{d} – date on the file / photo"],
 ocrFail:["사진 판독 엔진을 불러오지 못했습니다. 인터넷 연결을 확인하세요.","Không tải được bộ đọc ảnh (OCR). Kiểm tra kết nối Internet.","Could not load the OCR engine. Check your connection."],
-htmlDone:["데이터가 포함된 HTML을 다운로드했습니다","Đã tải file HTML (gồm toàn bộ dữ liệu)","Downloaded HTML with all data"],savedToast:["저장했습니다","Đã lưu","Saved"]};
+shipChkOk:["사진의 TOTAL과 일치 ✓ (계획 {p} · 실적 {a})","Khớp với dòng TOTAL trên ảnh ✓ (KH {p} · TT {a})","Matches the TOTAL row in the photo ✓ (plan {p} · actual {a})"],shipChkBad:["사진의 TOTAL과 다름 – 계획 {p} · 실적 {a}. 빨간 셀을 확인하세요","Chưa khớp dòng TOTAL trên ảnh – KH {p} · TT {a}. Hãy kiểm tra lại số","Differs from the TOTAL row in the photo – plan {p} · actual {a}. Please check"],htmlDone:["데이터가 포함된 HTML을 다운로드했습니다","Đã tải file HTML (gồm toàn bộ dữ liệu)","Downloaded HTML with all data"],savedToast:["저장했습니다","Đã lưu","Saved"]};
 const LI={ko:0,vi:1,en:2};
 let lang="vi";
 const T=(k,v)=>{let s=W[k]?W[k][LI[lang]]:k;if(v)s=s.replace(/\{(\w+)\}/g,(m,x)=>v[x]??"");return s};
@@ -551,12 +551,13 @@ const TJS="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js
 const TOPT={workerPath:"https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js",corePath:"https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1",langPath:"https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng@1.0.0/4.0.0_best_int",gzip:true};
 const loadImg=blob=>new Promise((res,rej)=>{const u=URL.createObjectURL(blob),i=new Image();i.onload=()=>{URL.revokeObjectURL(u);res(i)};i.onerror=()=>{URL.revokeObjectURL(u);rej(new Error("image"))};i.src=u});
 function binarize(img){
-  const k=Math.max(1,Math.min(3,2200/img.naturalWidth)),W=Math.round(img.naturalWidth*k),H=Math.round(img.naturalHeight*k);
+  const CF=window.OCRCFG||{},k=Math.max(1,Math.min(CF.kmax||3,(CF.tw||2200)/img.naturalWidth)),W=Math.round(img.naturalWidth*k),H=Math.round(img.naturalHeight*k);
   const c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d",{willReadFrequently:true});
   x.fillStyle="#fff";x.fillRect(0,0,W,H);x.imageSmoothingQuality="high";x.drawImage(img,0,0,W,H);
   const d=x.getImageData(0,0,W,H),p=d.data,B=new Uint8Array(W*H);
-  for(let i=0;i<W*H;i++){const r=p[i*4],g=p[i*4+1],b=p[i*4+2],l=.299*r+.587*g+.114*b,red=r>140&&g<110&&b<110;B[i]=(l<150||red)?1:0}
-  return{c,x,W,H,B,k};
+  const G=new Uint8Array(W*H);
+  for(let i=0;i<W*H;i++){const r=p[i*4],g=p[i*4+1],b=p[i*4+2],l=.299*r+.587*g+.114*b,red=r>140&&g<110&&b<110;B[i]=(l<(CF.thr||175)||red)?1:0;G[i]=red?Math.min(l,60):l}
+  return{c,x,W,H,B,G,k};
 }
 function findLines(bm){const{W,H,B}=bm,hr=[],vr=[];
   for(let y=0;y<H;y++){let run=0,best=0;for(let x=0;x<W;x++){run=B[y*W+x]?run+1:0;if(run>best)best=run}if(best>W*.45)hr.push(y)}
@@ -565,17 +566,35 @@ function findLines(bm){const{W,H,B}=bm,hr=[],vr=[];
   for(let x=0;x<W;x++){let run=0,best=0;for(let y=top;y<=bot;y++){run=B[y*W+x]?run+1:0;if(run>best)best=run}if(best>TH*.45)vr.push(x)}
   const V1=grp(vr);if(V1.length<3)return null;return{H:H1,V:V1}}
 function cleanLines(bm,L){const{W,H,B}=bm;const N=new Uint8Array(B);
-  L.H.forEach(l=>{for(let y=Math.max(0,l.a-1);y<=Math.min(H-1,l.b+1);y++)for(let x=0;x<W;x++)N[y*W+x]=0});
-  L.V.forEach(l=>{for(let x=Math.max(0,l.a-1);x<=Math.min(W-1,l.b+1);x++)for(let y=0;y<H;y++)N[y*W+x]=0});
-  const c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d"),d=x.createImageData(W,H);
-  for(let i=0;i<W*H;i++){const v=N[i]?0:255;d.data[i*4]=d.data[i*4+1]=d.data[i*4+2]=v;d.data[i*4+3]=255}x.putImageData(d,0,0);return{canvas:c,N}}
+  const mg=(window.OCRCFG||{}).mg??Math.max(1,Math.round(bm.k)),minRun=Math.round(25*bm.k);
+  /* erase a grid line only where it really is drawn (a merged cell has no line → its text stays intact) */
+  L.H.forEach(l=>{const y=l.m;let x=0;while(x<W){if(!B[y*W+x]){x++;continue}let e=x;while(e<W&&B[y*W+e])e++;if(e-x>=minRun)for(let yy=Math.max(0,l.a-mg);yy<=Math.min(H-1,l.b+mg);yy++)for(let xx=x;xx<e;xx++)N[yy*W+xx]=0;x=e}});
+  L.V.forEach(l=>{const x=l.m;let y=0;while(y<H){if(!B[y*W+x]){y++;continue}let e=y;while(e<H&&B[e*W+x])e++;if(e-y>=minRun)for(let xx=Math.max(0,l.a-mg);xx<=Math.min(W-1,l.b+mg);xx++)for(let yy=y;yy<e;yy++)N[yy*W+xx]=0;y=e}});
+  /* OCR reads a grey, contrast-stretched copy (keeps stroke detail, fades the light watermark); grid lines painted white */
+  const c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d"),d=x.createImageData(W,H),G=bm.G;
+  for(let i=0;i<W*H;i++){let v;if(!(window.OCRCFG||{}).gray){v=N[i]?0:255}else if(B[i]&&!N[i])v=255;else{v=Math.round((G[i]-40)*255/150);v=v<0?0:v>255?255:v}d.data[i*4]=d.data[i*4+1]=d.data[i*4+2]=v;d.data[i*4+3]=255}x.putImageData(d,0,0);return{canvas:c,N}}
 const ink=(N,W,r)=>{let n=0;for(let y=r.top;y<r.top+r.height;y++)for(let x=r.left;x<r.left+r.width;x++)n+=N[y*W+x];return n};
 const tight=(N,W,r,pd=8)=>{let x0=1e9,y0=1e9,x1=-1,y1=-1;for(let y=r.top;y<r.top+r.height;y++)for(let x=r.left;x<r.left+r.width;x++)if(N[y*W+x]){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
   if(x1<0)return r;return{left:Math.max(0,x0-pd),top:Math.max(0,y0-pd),width:x1-x0+1+2*pd,height:y1-y0+1+2*pd}};
 const borderAt=(bm,y,x0,x1)=>{let n=0;for(let x=x0;x<=x1;x++){let on=0;for(let dy=-2;dy<=2;dy++)on|=bm.B[(y+dy)*bm.W+x];n+=on}return n/(x1-x0+1)>.6};
+/* table edges drawn as dashed lines (print-preview frame) are not found as lines → add them from the extent of the horizontal lines */
+function addEdges(bm,L){const{W,B}=bm,ls=[],rs=[];
+  L.H.forEach(l=>{const y=l.m;let x0=-1,x1=-1;for(let x=0;x<W;x++)if(B[y*W+x]){if(x0<0)x0=x;x1=x}if(x0>=0){ls.push(x0);rs.push(x1)}});
+  if(!ls.length)return L;const med=a=>a.slice().sort((p,q)=>p-q)[a.length>>1],left=med(ls),right=med(rs),V=L.V.slice(),gap=Math.max(12,bm.k*6);
+  if(V[0].m-left>gap)V.unshift({a:left,b:left+1,m:left});if(right-V[V.length-1].m>gap)V.push({a:right-1,b:right,m:right});return{H:L.H,V}}
+/* vertical border present between two columns inside one row? (no border → merged cell, e.g. TOTAL) */
+const vBorderAt=(bm,x,y0,y1)=>{let n=0;for(let y=y0;y<=y1;y++){let on=0;for(let dx=-2;dx<=2;dx++)on|=bm.B[y*bm.W+x+dx];n+=on}return n/(y1-y0+1)>.6};
+/* "6.000" / "6,000" → 6000 · "(1.152)" → -1152 · "-" → "" */
+const ocrInt=t=>{t=String(t||"").replace(/\s/g,"");if(!t||/^[-–_.]+$/.test(t))return null;const neg=/^\(|\)$/.test(t)||/^-\d/.test(t);const d=t.replace(/[^0-9]/g,"");if(!d)return null;return(neg?-1:1)*(+d)};
+const ocrPct=t=>{t=String(t||"").replace(/\s/g,"").replace(/%/g,"");const m=t.match(/(\d+)[.,](\d)\d?$/)||t.match(/^(\d+)$/);return m?+(m[1]+"."+(m[2]||"0")):null};
+/* choose plan/act that agree with the diff and rate columns (fixes single misread digits) */
+function reconcile(p,a,d,r){const c=[];const add=(P,A,w)=>{if(P==null&&A==null)return;c.push({P,A,w})};
+  add(p,a,0);if(p!=null&&d!=null)add(p,p+d,1);if(a!=null&&d!=null)add(a-d,a,1);if(p!=null&&r!=null&&r>0)add(p,Math.round(p*r/100),2);if(a!=null&&r!=null&&r>0)add(Math.round(a*100/r),a,2);
+  const score=x=>{let s=x.w;const P=x.P||0,A=x.A||0;if(d!=null&&A-P!==d)s+=3;if(r!=null&&P&&Math.abs(A/P*100-r)>.15)s+=3;if(r==null&&P&&A&&d!=null&&A-P!==d)s+=1;if(x.P!=null&&x.P<0||x.A!=null&&x.A<0)s+=9;return s};
+  if(!c.length)return[p,a];c.sort((x,y)=>score(x)-score(y));return[c[0].P,c[0].A]}
 async function ocrShipImage(blob,onProg){
   if(!window.Tesseract&&!await new Promise(r=>{const x=document.createElement("script");x.src=TJS;x.onload=()=>r(!!window.Tesseract);x.onerror=()=>r(false);document.head.appendChild(x)}))return null;
-  const img=await loadImg(blob),bm=binarize(img),L=findLines(bm);
+  const img=await loadImg(blob),bm=binarize(img);let L=findLines(bm);if(L)L=addEdges(bm,L);
   const worker=await Tesseract.createWorker("eng",1,TOPT);
   try{
     if(!L){await worker.setParameters({tessedit_pageseg_mode:"6"});const r=await worker.recognize(bm.c);return parseShipText(r.data.text)}
@@ -584,30 +603,36 @@ async function ocrShipImage(blob,onProg){
     const rect=(r,c,r2=r)=>{const pd=3,top=rowsY[r][0]+pd,left=colsX[c][0]+pd;return{top,left,width:Math.max(4,colsX[c][1]-colsX[c][0]-2*pd),height:Math.max(4,rowsY[r2][1]-rowsY[r][0]-2*pd)}};
     const has=r=>ink(N,bm.W,r)>Math.max(12,r.width*r.height*.004),rd=async re=>(await worker.recognize(canvas,{rectangle:tight(N,bm.W,re)})).data.text;
     const nC=colsX.length,nR=rowsY.length;
-    // column roles from the header row (fallback: standard order)
-    const roles=["item","name","plan","act","diff","rate","note"].slice(0,nC);
-    // merged item cells: no horizontal border inside the item column
-    const itemSpan=[];for(let r=1;r<nR;r++){let r2=r;while(r2+1<nR&&!borderAt(bm,L.H[r2+1].m,colsX[0][0]+4,colsX[0][1]-4))r2++;for(let q=r;q<=r2;q++)itemSpan[q]=[r,r2];r=r2}
-    const out=[],jobs=[];
-    for(let r=1;r<nR;r++)out.push({});
-    // text columns
+    /* TOTAL row = item and name cells merged */
+    const merged=r=>nC>1&&!vBorderAt(bm,L.V[1].m,rowsY[r][0]+2,rowsY[r][1]-2);
+    const itemSpan=[];for(let r=1;r<nR;r++){let r2=r;while(r2+1<nR&&!merged(r2+1)&&!borderAt(bm,L.H[r2+1].m,colsX[0][0]+4,colsX[0][1]-4))r2++;for(let q=r;q<=r2;q++)itemSpan[q]=[r,r2];r=r2}
+    const out=[];for(let r=1;r<nR;r++)out.push({tot:merged(r)});
+    const numCols=[[2,"plan"],[3,"act"],[4,"diff"],[5,"rate"]].filter(([c])=>c<nC);
+    const tot=(nR-1)*(2+numCols.length);let done=0;const tick=()=>onProg&&onProg(++done/tot);
     await worker.setParameters({tessedit_pageseg_mode:"7",tessedit_char_whitelist:"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789()-_ "});
-    const tot=(nR-1)*4;let done=0;const tick=()=>onProg&&onProg(++done/tot);
-    for(let r=1;r<nR;r++){
+    for(let r=1;r<nR;r++){const o=out[r-1];
+      if(o.tot){const re=rect(r,0);re.width=colsX[Math.min(1,nC-1)][1]-re.left-3;o.item=has(re)?(await rd(re)).trim():"";o.name="";tick();tick();continue}
       const [a,b]=itemSpan[r];if(a===r){const re=rect(a,0,b);let v="";if(has(re))v=(await rd(re)).trim();for(let q=a;q<=b;q++)out[q-1].item=v}tick();
-      const re=rect(r,1);out[r-1].name=has(re)?(await rd(re)).trim():"";tick()}
-    await worker.setParameters({tessedit_pageseg_mode:"7",tessedit_char_whitelist:"0123456789,.()-"});
-    for(let r=1;r<nR;r++)for(const [ci,key] of [[2,"plan"],[3,"act"]]){const re=rect(r,ci);let v="";
-      if(has(re)){const t=(await rd(re)).replace(/\s/g,"");const d=t.replace(/[^0-9]/g,"");v=d&&d.length>=1&&!/^-+$/.test(t)?String(+d):""}out[r-1][key]=v;tick()}
-    // date above the table (e.g. "10/30")
+      if(nC>1){const re=rect(r,1);o.name=has(re)?(await rd(re)).trim():""}tick()}
+    await worker.setParameters({tessedit_pageseg_mode:"7",tessedit_char_whitelist:"0123456789,.()-%"});
+    for(let r=1;r<nR;r++)for(const [ci,key] of numCols){const re=rect(r,ci);let v=null;
+      if(has(re)){const t=await rd(re);v=key==="rate"?ocrPct(t):ocrInt(t)}out[r-1][key]=v;tick()}
     let date="";if(L.H[0].a>20){const zr={left:0,top:0,width:bm.W,height:L.H[0].a-3};if(ink(bm.B,bm.W,zr)>10){await worker.setParameters({tessedit_pageseg_mode:"7",tessedit_char_whitelist:"0123456789/.-"});
       const t=(await worker.recognize(bm.c,{rectangle:tight(bm.B,bm.W,zr,10)})).data.text;const m=t.match(/(\d{1,2})\s*[\/.-]\s*(\d{1,2})/);if(m&&+m[1]>=1&&+m[1]<=12&&+m[2]>=1&&+m[2]<=31)date=`${pad(m[1])}-${pad(m[2])}`}}
-    let rows=out.filter(r=>!/^T[O0]T|TOTAL|OTAL/i.test(String(r.item).replace(/\s/g,""))).map(r=>({item:normItem(r.item),name:normName(r.name),plan:r.plan,act:r.act})).filter(r=>r.item||r.name||r.plan||r.act);
-    const lr=rows[rows.length-1];if(lr&&rows.length>2){const sp=rows.slice(0,-1).reduce((a,x)=>a+num(x.plan),0),sa=rows.slice(0,-1).reduce((a,x)=>a+num(x.act),0);if(num(lr.plan)===sp&&num(lr.act)===sa)rows.pop()}
-    return{rows,mmdd:date}
+    const isTot=o=>o.tot||/^T[O0]T|TOTAL|OTAL/i.test(String(o.item||"").replace(/\s/g,""));
+    const totRow=out.find(isTot);
+    const S2=v=>v==null||v===0?"":String(v);
+    const rows=out.filter(o=>!isTot(o)).map(o=>{const[P,A]=reconcile(o.plan,o.act,o.diff,o.rate);return{item:normItem(o.item),name:normName(o.name),plan:S2(P),act:S2(A)}}).filter(r=>r.item||r.name||r.plan||r.act);
+    /* the 04 list is fixed: same number of rows as the usual list → snap near-miss codes to it */
+    {const pick=D=>D&&shipHasData(D.s)?live(D.s).filter(r=>r.item||r.name):null;let tpl=pick(S.days[S.cur]);if(!tpl){const ds=dates().filter(d=>d<=S.cur).reverse();for(const d of ds){tpl=pick(S.days[d]);if(tpl)break}}
+     tpl=(tpl||SHIP_LIST.map(([item,name])=>({item,name}))).map(r=>({item:String(r.item||"").toUpperCase(),name:String(r.name||"").toUpperCase()}));
+     if(tpl.length===rows.length){const same=rows.filter((r,i)=>r.name===tpl[i].name).length;if(same>=rows.length*.7)rows.forEach((r,i)=>{const t=tpl[i];
+       if(r.item!==t.item&&(!r.item||lev(r.item,t.item)<=(r.name===t.name?3:2)))r.item=t.item;if(r.name!==t.name&&(!r.name||lev(r.name,t.name)<=2))r.name=t.name})}}
+    let check=null;if(totRow){const[P,A]=reconcile(totRow.plan,totRow.act,totRow.diff,totRow.rate);if(P!=null||A!=null)check={plan:P||0,act:A||0}}
+    return{rows,mmdd:date,check}
   }finally{await worker.terminate()}
 }
-const normName=s=>{s=String(s||"").toUpperCase().replace(/[^A-Z]/g,"");const k=["FRONT","REAR","SUB","CAM"].find(x=>s===x||(s.length>=3&&(x.startsWith(s.slice(0,3))||s.includes(x))));return k||s};
+const normName=s=>{s=String(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"").replace(/0/g,"O").replace(/8/g,"B").replace(/[^A-Z]/g,"");const K=["FRONT","REAR","SUB","CAM"];const k=K.find(x=>s===x)||K.find(x=>s.length>=3&&(x.startsWith(s.slice(0,3))||s.includes(x)))||K.find(x=>s.length>=2&&x.startsWith(s.slice(0,2)));return k||s};
 const lev=(a,b)=>{const m=a.length,n=b.length,d=[...Array(n+1).keys()];for(let i=1;i<=m;i++){let p=d[0];d[0]=i;for(let j=1;j<=n;j++){const t=d[j];d[j]=Math.min(d[j]+1,d[j-1]+1,p+(a[i-1]===b[j-1]?0:1));p=t}}return d[n]};
 const normItem=raw=>{let s=String(raw||"").toUpperCase().replace(/\s+/g,"");if(!s)return"";
   const fixed=s.replace(/^(SM-)?([A-Z])([^(]*)/,(m,sm,a,rest)=>(sm||"")+a+rest.replace(/[OD]/g,"0").replace(/[IL|]/g,"1").replace(/S/g,"5").replace(/B/g,"8").replace(/Z/g,"2").replace(/U$/,"U"));
@@ -651,9 +676,10 @@ async function shipPreview(res,src,isOcr){
       <td class="g" id="spd${i}"></td><td class="g" id="spr${i}"></td></tr>`).join("")}<tr class="t"><td colspan="2" style="text-align:center">TOTAL</td><td id="spTp"></td><td id="spTa"></td><td id="spTd"></td><td id="spTr"></td></tr></table>`;
   const upd=m=>{let sp=0,sa=0;R.forEach((r,i)=>{const p=num(r.plan),a=num(r.act),blank=!String(r.plan).trim()&&!String(r.act).trim(),df=a-p;sp+=p;sa+=a;
       const d=m.querySelector("#spd"+i),q=m.querySelector("#spr"+i);d.textContent=blank||!df?"-":df<0?`(${fmt(-df)})`:fmt(df);d.className="g"+(!blank&&df<0?" neg":"");q.textContent=p?(a/p*100).toFixed(1)+"%":"";q.className="g"+(p&&a<p?" neg":"")});
-    const df=sa-sp;m.querySelector("#spTp").textContent=fmt(sp);m.querySelector("#spTa").textContent=fmt(sa);const d=m.querySelector("#spTd");d.textContent=!df?"-":df<0?`(${fmt(-df)})`:fmt(df);d.className=df<0?"neg":"";const q=m.querySelector("#spTr");q.textContent=sp?(sa/sp*100).toFixed(1)+"%":"";q.className=sp&&sa<sp?"neg":""};
+    const df=sa-sp;m.querySelector("#spTp").textContent=fmt(sp);m.querySelector("#spTa").textContent=fmt(sa);const d=m.querySelector("#spTd");d.textContent=!df?"-":df<0?`(${fmt(-df)})`:fmt(df);d.className=df<0?"neg":"";const q=m.querySelector("#spTr");q.textContent=sp?(sa/sp*100).toFixed(1)+"%":"";q.className=sp&&sa<sp?"neg":"";
+    const ck=m.querySelector("#spChk");if(ck&&res.check){const ok=res.check.plan===sp&&res.check.act===sa;ck.textContent=T(ok?"shipChkOk":"shipChkBad",{p:fmt(res.check.plan),a:fmt(res.check.act)});ck.style.color=ok?"#1a7f4b":"#c0392b";m.querySelector("#spTp").style.color=res.check.plan===sp?"":"#c0392b";m.querySelector("#spTa").style.color=res.check.act===sa?"":"#c0392b"}};
   const r=await modal({title:T("shipTitle"),width:760,body:`<div class="note" style="margin:0 0 10px">${T("file")}: <b>${esc(src)}</b><br>${esc(T(isOcr?"shipOcrNote":"shipXlsNote"))}</div>
-      <div style="max-height:46vh;overflow:auto;margin-bottom:12px">${tbl()}</div>
+      <div style="max-height:46vh;overflow:auto;margin-bottom:12px">${tbl()}</div>${res.check?`<div id="spChk" class="note" style="margin:0 0 12px;font-weight:700"></div>`:""}
       <div class="fld"><span>${esc(T("target"))}</span>${opts.map(([k,d],i)=>`<label class="radio"><input type="radio" name="tg" value="${d}"${i===0?" checked":""}><span>${esc(T("tg"+k,{d:fmtDayLong(d)}))}${S.days[d]?"":" ✚"}</span></label>`).join("")}</div>`,
     actions:[{v:"no",label:T("cancel")},{v:"ok",label:T("apply"),cls:"pri"}],
     onMount:m=>{upd(m);m.querySelector(".sp-tbl").addEventListener("input",e=>{const t=e.target,i=+t.dataset.sp;if(isNaN(i))return;R[i][t.dataset.f]=/plan|act/.test(t.dataset.f)?t.value.replace(/,/g,"").trim():t.value;upd(m)})}});
