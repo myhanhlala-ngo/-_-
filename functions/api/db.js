@@ -511,10 +511,10 @@ export async function onRequestGet({ request, env }) {
     try { return await handleFile(request, env, decodeURIComponent(fileMatch[1])); }
     catch (e) { return json({ ok: false, error: String(e?.message || e) }, 500); }
   }
-  const auth = denied(request, env); if (auth) return auth;
-  try {
-    await ensureReady(env.DB);
-    if (url.pathname === "/api/db/audit") {
+    const auth = denied(request, env); if (auth) return auth;
+try {
+  await ensureReady(env.DB);
+  if (url.pathname === "/api/db/audit") {
       const day = url.searchParams.get("day") || "";
       const limit = Math.min(500, Math.max(1, Number(url.searchParams.get("limit")) || 200));
       const rows = day
