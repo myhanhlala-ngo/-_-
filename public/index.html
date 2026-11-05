@@ -1206,7 +1206,7 @@ function svSet(st){SV.st=st;if(st==="ok")SV.at=Date.now();updateSaved()}
 async function svInit(){
   if(!/^https?:$/.test(location.protocol))return null;
   try{const r=await svFetch("/api/db");if(!r.ok)return null;const j=await r.json();if(!j||!j.ok)return null;SV.on=true;SV.rev=j.rev??j.revision??0;SV.baseState=j.state?clone(toV3(j.state)):null;return j}catch(e){return null}}
-function svSchedule(){if(!SV.on)return;SV.dirty=true;svSet("saving");clearTimeout(SV.t);SV.t=setTimeout(svPush,1200)}
+function svSchedule(){if(!SV.on)return;SV.dirty=true;svSet("saving");clearTimeout(SV.t);SV.t=setTimeout(svPush,500)}
 /* =====================================================================
    MERGE ENGINE — three-way merge  base (last synced) · mine (this device) · theirs (server / other file)
    - every date, every section row (_id) and every cell is merged separately → other dates are never touched
