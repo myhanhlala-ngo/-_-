@@ -1262,6 +1262,11 @@ async function svPush(){
   if(!SV.on)return;if(SV.busy){clearTimeout(SV.t);SV.t=setTimeout(svPush,800);return}
   SV.busy=true;SV.dirty=false;
   const sentState=clone(S), baseState=SV.baseState?clone(SV.baseState):null;
+
+console.log("STATE DEBUG:", sentState);
+console.log("DAYS DEBUG:", sentState?.days);
+console.log("DAYS TYPE:", typeof sentState?.days);
+console.log("IS DAYS ARRAY:", Array.isArray(sentState?.days));
   try{const r=await svFetch("/api/db",{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({state:sentState,baseState,baseRev:SV.rev,by:(S.days&&S.days[S.cur]&&S.days[S.cur].writer)||""})});
     const j=await r.json().catch(()=>({}));
     if(r.status===409&&j.state){await snapshot("v_conflict");const k=keepUser();S=toV3(j.state);Object.assign(S.settings,k);SV.rev=j.rev??j.revision??SV.rev;SV.baseState=clone(j.state);try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}render();svSet("ok");toast(T("svConflict"),"err")}
