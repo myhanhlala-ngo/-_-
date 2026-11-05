@@ -449,10 +449,26 @@ async function handleFile(request, env, id) {
   return json({ ok: false, error: "Method not allowed" }, 405);
 }
 
-function denied(request, env) {
+  function denied(request, env) {
   const token = env.APP_TOKEN;
-  return token && request.headers.get("x-app-token") !== token
-    ? json({ ok: false, error: "Unauthorized" }, 401) : null;
+
+  // Không cho phép truy cập nếu máy chủ chưa cấu hình mật khẩu
+  if (!token) {
+    return json({
+      ok: false,
+      error: "Server authentication is not configured"
+    }, 500);
+  }
+
+  // Từ chối nếu không có token hoặc token không chính xác
+  if (request.headers.get("x-app-token") !== token) {
+    return json({
+      ok: false,
+      error: "Unauthorized"
+    }, 401);
+  }
+
+  return null;
 }
 
 export async function onRequestGet({ request, env }) {
