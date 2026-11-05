@@ -76,6 +76,18 @@ async function ensureSchema(db) {
     name TEXT PRIMARY KEY,
     completed_at INTEGER NOT NULL
   )`).run();
+  await db.prepare(`CREATE TABLE IF NOT EXISTS report_audit (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    report_day TEXT NOT NULL,
+    editor TEXT NOT NULL DEFAULT '',
+    field_path TEXT NOT NULL,
+    old_value TEXT,
+    new_value TEXT,
+    created_at INTEGER NOT NULL,
+    revision INTEGER NOT NULL DEFAULT 0
+  )`).run();
+  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_report_audit_day_time
+    ON report_audit(report_day, created_at DESC, id DESC)`).run();
 }
 
 async function migrateLegacy(db) {
@@ -191,6 +203,21 @@ function mergeMeta(base, current, desired, conflicts) {
   return out;
 }
 
+function auditDiff(oldValue, newValue, path = "", out = []) {
+  if (same(oldValue, newValue)) return out;
+  const oldObj = isObject(oldValue), newObj = isObject(newValue);
+  if (oldObj || newObj) {
+    const oldMap = oldObj ? oldValue : {}, newMap = newObj ? newValue : {};
+    const keys = new Set([...Object.keys(oldMap), ...Object.keys(newMap)]);
+    for (const key of keys) auditDiff(oldMap[key], newMap[key], path ? `${path}.${key}` : key, out);
+    return out;
+  }
+  out.push({ path: path || "value", oldValue, newValue });
+  return out;
+}
+
+const auditJson = value => value === undefined ? null : JSON.stringify(value);
+
 async function saveState(db, body) {
   if (!body || !body.state || typeof body.state !== "object" ||
       !body.state.days || typeof body.state.days !== "object" || Array.isArray(body.state.days)) {
@@ -264,6 +291,16 @@ async function saveState(db, body) {
 
       const nextJson = JSON.stringify(mergedValue === undefined ? null : mergedValue);
       let result;
+      const beforeVersion = Number(oldRow?.version || 0);
+      const editor = String(body.by || mergedValue?.writer || "").slice(0, 120);
+      const diffs = auditDiff(currentValue, mergedValue);
+      const auditStatements = diffs.map(change => db.prepare(
+        `INSERT INTO report_audit(report_day,editor,field_path,old_value,new_value,created_at,revision)
+         SELECT ?,?,?,?,?,?,? WHERE EXISTS (
+           SELECT 1 FROM report_days WHERE day=? AND data_json=? AND version=? AND saved_at=? AND updated_by=?
+         )`
+      ).bind(w.day, editor, change.path, auditJson(change.oldValue), auditJson(change.newValue), at, beforeVersion + 1,
+        w.day, nextJson, beforeVersion + 1, at, editor));
       if (oldRow) {
         result = await db.batch([
           db.prepare(
@@ -274,25 +311,23 @@ async function saveState(db, body) {
           db.prepare(
             `UPDATE report_days SET data_json=?, version=version+1, saved_at=?, updated_by=?
              WHERE day=? AND data_json=?`
-          ).bind(nextJson, at, who, w.day, oldJson)
+          ).bind(nextJson, at, editor, w.day, oldJson),
+          ...auditStatements
         ]);
         saved = Number(result[1]?.meta?.changes || 0) === 1;
       } else {
-        result = await db.prepare(
-          `INSERT INTO report_days(day,data_json,version,saved_at,updated_by)
-           VALUES(?,?,1,?,?) ON CONFLICT(day) DO NOTHING`
-        ).bind(w.day, nextJson, at, who).run();
-        saved = Number(result?.meta?.changes || 0) === 1;
+        result = await db.batch([
+          db.prepare(
+            `INSERT INTO report_days(day,data_json,version,saved_at,updated_by)
+             VALUES(?,?,1,?,?) ON CONFLICT(day) DO NOTHING`
+          ).bind(w.day, nextJson, at, editor),
+          ...auditStatements
+        ]);
+        saved = Number(result[0]?.meta?.changes || 0) === 1;
       }
       if (saved) {
         successfulWrites++;
         if (dayConflictPaths.length) conflicts.push(...dayConflictPaths);
-        await db.prepare(
-          `DELETE FROM report_history WHERE id IN (
-            SELECT id FROM report_history WHERE scope=? AND item_key=?
-            ORDER BY id DESC LIMIT -1 OFFSET 20
-          )`
-        ).bind("day", w.day).run();
       }
       // If another request won the compare-and-swap, retry against its new value.
     }
@@ -397,6 +432,14 @@ export async function onRequestGet({ request, env }) {
   const auth = denied(request, env); if (auth) return auth;
   try {
     await ensureReady(env.DB);
+    if (url.pathname === "/api/db/audit") {
+      const day = url.searchParams.get("day") || "";
+      const limit = Math.min(500, Math.max(1, Number(url.searchParams.get("limit")) || 200));
+      const rows = day
+        ? await env.DB.prepare(`SELECT id,report_day,editor,field_path,old_value,new_value,created_at,revision FROM report_audit WHERE report_day=? ORDER BY id DESC LIMIT ?`).bind(day, limit).all()
+        : await env.DB.prepare(`SELECT id,report_day,editor,field_path,old_value,new_value,created_at,revision FROM report_audit ORDER BY id DESC LIMIT ?`).bind(limit).all();
+      return json({ ok: true, items: rows.results || [] });
+    }
     const cur = await readCurrent(env.DB);
     const rev = cur.rev;
     if (url.searchParams.get("meta") === "1") {
