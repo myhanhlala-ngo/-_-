@@ -240,6 +240,7 @@ async function saveState(db, body) {
   const who = String(body.by || "").slice(0, 120);
   const stmts = [];
   const tracked = [];
+  let successfulWrites = 0;
 
   for (const w of dayWrites) {
     let saved = false;
@@ -286,6 +287,12 @@ async function saveState(db, body) {
       if (saved) {
         successfulWrites++;
         if (dayConflictPaths.length) conflicts.push(...dayConflictPaths);
+        await db.prepare(
+          `DELETE FROM report_history WHERE id IN (
+            SELECT id FROM report_history WHERE scope=? AND item_key=?
+            ORDER BY id DESC LIMIT -1 OFFSET 20
+          )`
+        ).bind("day", w.day).run();
       }
       // If another request won the compare-and-swap, retry against its new value.
     }
@@ -310,7 +317,6 @@ async function saveState(db, body) {
     }
   }
 
-  let successfulWrites = 0;
   if (stmts.length) {
     const results = await db.batch(stmts);
     for (const t of tracked) {
