@@ -1,0 +1,5 @@
+ASSY Daily Report – Cloudflare Daily Sync V2
+Build: 2026-11-05
+Primary runtime: Cloudflare Pages Functions + D1
+Required D1 binding: DB -> assy-daily-report
+Optional R2 binding: REPORT_FILES -> shared attachments bucket

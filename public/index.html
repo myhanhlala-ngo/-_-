@@ -1164,10 +1164,10 @@ document.addEventListener("paste",e=>{
    ===================================================================== */
 
 /* =====================================================================
-   SERVER SYNC (Netlify)  — active only when the page is served over http(s) and /api/db answers
-   - load: newest of server / this browser; first visit seeds an empty server
-   - save: every change is pushed (debounced) with the revision it was based on;
-           if someone else saved first (409) their version is loaded and ours kept in Version history
+   SERVER SYNC (Cloudflare Pages + D1) — daily records with three-way merge
+   - each report date is stored as an independent D1 row
+   - clients send their last server snapshot so changes to different dates can merge
+   - edits to the same date are detected; the local draft is preserved in Version history
    - poll: every 20 s, newer data from colleagues is pulled in (not while typing)
    - files: attached PDFs are stored on the server too
    ===================================================================== */
@@ -1177,7 +1177,7 @@ Object.assign(W,{
   svConflict:["다른 사용자가 먼저 저장했습니다. 최신 데이터를 불러왔고, 내 수정본은 버전 기록에 보관했습니다.","Người khác vừa lưu trước. Đã tải bản mới nhất; bản của bạn được giữ trong Lịch sử phiên bản.","Someone saved first. Their version was loaded; yours is kept in Version history."],
   svTokenT:["접속 비밀번호","Mật khẩu truy cập","Access password"],svTokenQ:["이 보고서는 비밀번호로 보호되어 있습니다.","Báo cáo này được bảo vệ bằng mật khẩu.","This report is password-protected."],svTokenBad:["비밀번호가 올바르지 않습니다","Mật khẩu không đúng","Wrong password"],
   v_conflict:["충돌 전 내 수정본","Bản của tôi trước khi xung đột","Mine before conflict"],svFileBig:["파일이 커서 서버에 올리지 못했습니다 (최대 5.5MB): {f}","File quá lớn, không lưu được lên server (tối đa 5,5MB): {f}","File too large for the server (max 5.5 MB): {f}"]});
-const SV={on:false,rev:0,dirty:false,busy:false,t:null,st:"",at:0,token:"",typed:0};
+const SV={on:false,rev:0,baseState:null,dirty:false,busy:false,t:null,st:"",at:0,token:"",typed:0};
 document.addEventListener("input",()=>{SV.typed=Date.now()},true);document.addEventListener("keydown",()=>{SV.typed=Date.now()},true);
 const PER_USER=["lang","view","collapsed","autoHtml","autoTr"];
 const keepUser=()=>Object.fromEntries(PER_USER.map(k=>[k,S&&S.settings?S.settings[k]:undefined]));
@@ -1192,15 +1192,16 @@ async function svFetch(path,opt={},retry=true){
 function svSet(st){SV.st=st;if(st==="ok")SV.at=Date.now();updateSaved()}
 async function svInit(){
   if(!/^https?:$/.test(location.protocol))return null;
-  try{const r=await svFetch("/api/db");if(!r.ok)return null;const j=await r.json();if(!j||!j.ok)return null;SV.on=true;SV.rev=j.rev||0;return j}catch(e){return null}}
+  try{const r=await svFetch("/api/db");if(!r.ok)return null;const j=await r.json();if(!j||!j.ok)return null;SV.on=true;SV.rev=j.rev??j.revision??0;SV.baseState=j.state?clone(j.state):null;return j}catch(e){return null}}
 function svSchedule(){if(!SV.on)return;SV.dirty=true;svSet("saving");clearTimeout(SV.t);SV.t=setTimeout(svPush,1200)}
 async function svPush(){
   if(!SV.on)return;if(SV.busy){clearTimeout(SV.t);SV.t=setTimeout(svPush,800);return}
   SV.busy=true;SV.dirty=false;
-  try{const r=await svFetch("/api/db",{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({state:S,baseRev:SV.rev})});
+  const sentState=clone(S), baseState=SV.baseState?clone(SV.baseState):null;
+  try{const r=await svFetch("/api/db",{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({state:sentState,baseState,baseRev:SV.rev,by:S.writer||""})});
     const j=await r.json().catch(()=>({}));
-    if(r.status===409&&j.state){await snapshot("v_conflict");const k=keepUser();S=toV3(j.state);Object.assign(S.settings,k);SV.rev=j.rev;try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}render();svSet("ok");toast(T("svConflict"),"err")}
-    else if(r.ok&&j.ok){SV.rev=j.rev;svSet(SV.dirty?"saving":"ok")}
+    if(r.status===409&&j.state){await snapshot("v_conflict");const k=keepUser();S=toV3(j.state);Object.assign(S.settings,k);SV.rev=j.rev??j.revision??SV.rev;SV.baseState=clone(j.state);try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}render();svSet("ok");toast(T("svConflict"),"err")}
+    else if(r.ok&&j.ok){SV.rev=j.rev??j.revision??SV.rev;SV.baseState=clone(j.state||sentState);svSet(SV.dirty?"saving":"ok")}
     else throw new Error(j.error||r.status)}
   catch(e){SV.dirty=true;svSet("err");clearTimeout(SV.t);SV.t=setTimeout(svPush,8000)}
   finally{SV.busy=false}}
@@ -1208,13 +1209,13 @@ async function svPoll(){
   if(!SV.on||SV.busy||SV.dirty||document.hidden||document.querySelector(".mask"))return;
   if(Date.now()-SV.typed<15000||MC.drag||MC.sel)return;
   try{const r=await svFetch("/api/db?meta=1",{},false);if(!r.ok){svSet("off");return}const m=await r.json();if(SV.st==="off")svSet("ok");
-    if(m.rev===SV.rev)return;const f=await(await svFetch("/api/db",{},false)).json();if(!f.ok||!f.state||SV.dirty)return;
-    const k=keepUser(),cur=S.cur;S=toV3(f.state);Object.assign(S.settings,k);if(S.days[cur])S.cur=cur;SV.rev=f.rev;
+    const remoteRev=m.rev??m.revision??0;if(remoteRev===SV.rev)return;const f=await(await svFetch("/api/db",{},false)).json();if(!f.ok||!f.state||SV.dirty)return;
+    const k=keepUser(),cur=S.cur;S=toV3(f.state);Object.assign(S.settings,k);if(S.days[cur])S.cur=cur;SV.rev=f.rev??f.revision??remoteRev;SV.baseState=clone(f.state);
     try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}render();svSet("ok");toast(T("svPull"),"ok")}
   catch(e){svSet("off")}}
 const svStatus=()=>!SV.on?"":` · <b style="color:${SV.st==="err"||SV.st==="off"?"#F5A3A3":SV.st==="saving"?"#F0CC7A":"#8FE0B4"}">☁ ${esc(T(SV.st==="saving"?"svSaving":SV.st==="err"?"svErr":SV.st==="off"?"svOff":"svOk"))}${SV.st==="ok"&&SV.at?" "+esc(fmtStamp(SV.at).split(" ")[lang==="vi"?0:1]):""}</b>`;
 async function svPutFile(o){if(!SV.on||!o||!o.blob)return;if(o.blob.size>5.5*1048576){toast(T("svFileBig",{f:o.name||o.id}),"err");return}
-  try{await svFetch("/api/db/file/"+encodeURIComponent(o.id),{method:"PUT",headers:{"content-type":o.type||"application/octet-stream","x-file-name":encodeURIComponent(o.name||o.id)},body:o.blob})}catch(e){}}
+  try{const r=await svFetch("/api/db/file/"+encodeURIComponent(o.id),{method:"PUT",headers:{"content-type":o.type||"application/octet-stream","x-file-name":encodeURIComponent(o.name||o.id)},body:o.blob});if(!r.ok&&r.status===503)toast("Chưa cấu hình R2 REPORT_FILES: tệp đính kèm hiện chỉ lưu trên máy này.","err")}catch(e){}}
 async function svGetFile(id){if(!SV.on)return null;try{const r=await svFetch("/api/db/file/"+encodeURIComponent(id),{},false);if(!r.ok)return null;const b=await r.blob();const o={id,name:id,type:b.type||"application/pdf",blob:b};await DB.put("files",o);return o}catch(e){return null}}
 async function svDelFile(id){if(!SV.on)return;try{await svFetch("/api/db/file/"+encodeURIComponent(id),{method:"DELETE"},false)}catch(e){}}
 
