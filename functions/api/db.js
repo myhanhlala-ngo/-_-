@@ -21,6 +21,32 @@ const stable = (v) => {
 const same = (a, b) => stable(a) === stable(b);
 const clone = v => v == null ? v : JSON.parse(JSON.stringify(v));
 
+const isObject = v => v !== null && typeof v === "object" && !Array.isArray(v);
+
+// Three-way merge at field level:
+// - unchanged by the editor => keep server value
+// - changed only by the editor => accept editor value
+// - changed by both to same value => keep it
+// - changed differently by both => keep server value and report exact field path
+// Arrays are treated as atomic values to avoid unsafe index-based merges.
+function mergeThreeWay(base, current, desired, path, conflicts) {
+  if (same(base, desired)) return clone(current);
+  if (same(current, base)) return clone(desired);
+  if (same(current, desired)) return clone(current);
+  if (isObject(base) && isObject(current) && isObject(desired)) {
+    const out = {};
+    const keys = new Set([...Object.keys(base), ...Object.keys(current), ...Object.keys(desired)]);
+    for (const key of keys) {
+      const value = mergeThreeWay(base[key], current[key], desired[key],
+        path ? `${path}.${key}` : key, conflicts);
+      if (value !== undefined) out[key] = value;
+    }
+    return out;
+  }
+  conflicts.push(path || "value");
+  return clone(current);
+}
+
 async function ensureSchema(db) {
   await db.prepare(`CREATE TABLE IF NOT EXISTS report_days (
     day TEXT PRIMARY KEY,
@@ -192,14 +218,9 @@ async function saveState(db, body) {
 
   for (const day of allDays) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) continue;
-    const b = baseDays[day], c = currentDays[day], d = desiredDays[day];
+    const b = baseDays[day], d = desiredDays[day];
     if (same(b, d)) continue;
-    if (!same(c, b) && !same(c, d)) {
-      conflicts.push(`days.${day}`);
-      continue;
-    }
-    if (same(c, d)) continue;
-    dayWrites.push({ day, base: b, value: d === undefined ? null : d });
+    dayWrites.push({ day, base: b, value: d });
   }
 
   const mergedMeta = mergeMeta(
@@ -221,39 +242,54 @@ async function saveState(db, body) {
   const tracked = [];
 
   for (const w of dayWrites) {
-    const oldRow = await db.prepare("SELECT data_json, version FROM report_days WHERE day = ?").bind(w.day).first();
-    const oldJson = oldRow?.data_json ?? null;
-    // Re-check the base after the initial read. This closes the read/check/write race.
-    const oldValue = oldRow ? JSON.parse(oldJson) : undefined;
-    const normalizedOld = oldValue === null ? undefined : oldValue; // tombstone behaves as a missing day
-    if (oldRow && !same(normalizedOld, w.base)) {
-      if (!same(normalizedOld, w.value)) conflicts.push(`days.${w.day}`);
-      continue;
-    }
-    if (!oldRow && w.base !== undefined && w.base !== null) {
-      if (w.value !== null) conflicts.push(`days.${w.day}`);
-      continue;
-    }
-    if (oldRow) {
-      if (w.base !== undefined) {
-        stmts.push(db.prepare(
-          `INSERT INTO report_history(scope,item_key,data_json,version,saved_at,updated_by)
-           SELECT 'day', day, data_json, version, saved_at, updated_by
-           FROM report_days WHERE day=? AND data_json=?`
-        ).bind(w.day, oldJson));
+    let saved = false;
+    let dayConflictPaths = [];
+    // Retry CAS races so edits to different fields on the same report day can merge.
+    for (let attempt = 0; attempt < 4 && !saved; attempt++) {
+      const oldRow = await db.prepare(
+        "SELECT data_json, version, saved_at, updated_by FROM report_days WHERE day = ?"
+      ).bind(w.day).first();
+      const oldJson = oldRow?.data_json ?? null;
+      const rawCurrent = oldRow ? JSON.parse(oldJson) : undefined;
+      const currentValue = rawCurrent === null ? undefined : rawCurrent;
+      const attemptConflicts = [];
+      const mergedValue = mergeThreeWay(w.base, currentValue, w.value, `days.${w.day}`, attemptConflicts);
+      dayConflictPaths = attemptConflicts;
+
+      if (same(mergedValue, currentValue)) {
+        saved = true; // nothing safe to write; any conflicts are returned below
+        break;
       }
-      stmts.push(db.prepare(
-        `UPDATE report_days SET data_json=?, version=version+1, saved_at=?, updated_by=?
-         WHERE day=? AND data_json=?`
-      ).bind(JSON.stringify(w.value), at, who, w.day, oldJson));
-      tracked.push({ kind: "update", day: w.day, index: stmts.length - 1 });
-    } else {
-      stmts.push(db.prepare(
-        `INSERT INTO report_days(day,data_json,version,saved_at,updated_by)
-         VALUES(?,?,1,?,?) ON CONFLICT(day) DO NOTHING`
-      ).bind(w.day, JSON.stringify(w.value), at, who));
-      tracked.push({ kind: "insert", day: w.day, index: stmts.length - 1 });
+
+      const nextJson = JSON.stringify(mergedValue === undefined ? null : mergedValue);
+      let result;
+      if (oldRow) {
+        result = await db.batch([
+          db.prepare(
+            `INSERT INTO report_history(scope,item_key,data_json,version,saved_at,updated_by)
+             SELECT 'day', day, data_json, version, saved_at, updated_by
+             FROM report_days WHERE day=? AND data_json=?`
+          ).bind(w.day, oldJson),
+          db.prepare(
+            `UPDATE report_days SET data_json=?, version=version+1, saved_at=?, updated_by=?
+             WHERE day=? AND data_json=?`
+          ).bind(nextJson, at, who, w.day, oldJson)
+        ]);
+        saved = Number(result[1]?.meta?.changes || 0) === 1;
+      } else {
+        result = await db.prepare(
+          `INSERT INTO report_days(day,data_json,version,saved_at,updated_by)
+           VALUES(?,?,1,?,?) ON CONFLICT(day) DO NOTHING`
+        ).bind(w.day, nextJson, at, who).run();
+        saved = Number(result?.meta?.changes || 0) === 1;
+      }
+      if (saved) {
+        successfulWrites++;
+        if (dayConflictPaths.length) conflicts.push(...dayConflictPaths);
+      }
+      // If another request won the compare-and-swap, retry against its new value.
     }
+    if (!saved) conflicts.push(`days.${w.day}.concurrent-write`);
   }
 
   if (metaChanged) {
