@@ -303,6 +303,17 @@ function fromV2(st){
   out.tasks=out.tasks.filter(r=>r && !isEmptyRow(r));
   return out;
 }
+function makeRowId(){return "r_"+(globalThis.crypto&&crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+"_"+Math.random().toString(36).slice(2));}
+function ensureRowIds(state){
+  if(!state||!state.days)return state;
+  // Legacy rows get deterministic IDs so every browser derives the same IDs
+  // from the same pre-ID snapshot. Newly-created rows receive random IDs at
+  // creation time (see add/fill/mcApply below).
+  const fix=(arr,key)=>{if(Array.isArray(arr))arr.forEach((r,i)=>{if(r&&typeof r==="object"&&!Array.isArray(r)&&!r._id)r._id=`legacy_${key}_${i}`})};
+  Object.entries(state.days).forEach(([date,D])=>{if(D&&typeof D==="object")Object.entries(D).forEach(([section,arr])=>fix(arr,`${date}_${section}`))});
+  fix(state.tasks,"tasks");
+  return state;
+}
 function toV3(st){
   if(!st||typeof st!=="object"||!st.days) return null;
   const flat = !Array.isArray(st.tasks) || Object.values(st.days).some(d=>d&&Object.keys(d).some(k=>/^[pqesnw]\d+[a-zA-Z]/.test(k)));
@@ -315,9 +326,10 @@ function toV3(st){
     ["item","itemA"].forEach(k=>{const v=r&&r[k];if(typeof v==="string"&&/\d\s*\/\s*[\d,.]+\s*\(\s*[\d.,]+%\s*\)/.test(v))
       r[k]=v.split(/;\s*|\n/).map(x=>x.replace(/\s*:?\s*[\d,.]+\s*\/\s*[\d,.]+\s*\(\s*[\d.,]+%\s*\)\s*$/,"").trim()).filter(Boolean).join("\n")})}));
   if(!o.settings.mi2){Object.values(o.days).forEach(D=>{if(D&&D.prodSrc)(D.p||[]).forEach(r=>{if(r&&r.f==="4공장"&&(!String(r.item||"").trim()||r.item===r.itemA)){r.item="4F ASSEMBLY";r.itemA="4F ASSEMBLY"}})});o.settings.mi2=true}
+  ensureRowIds(o);
   return o;
 }
-function fill(){ const D=day(); DAY_SECS.forEach(k=>{ D[k]=D[k]||[]; if(!D[k].length) D[k].push({}); }); D.basis=D.basis||BASIS[0]; if(!S.tasks.length) S.tasks.push({}); }
+function fill(){ const D=day(); DAY_SECS.forEach(k=>{ D[k]=D[k]||[]; if(!D[k].length) D[k].push({_id:makeRowId()}); }); D.basis=D.basis||BASIS[0]; if(!S.tasks.length) S.tasks.push({_id:makeRowId()}); }
 
 /* ---------- storage: localStorage (data) + IndexedDB (PDF files, versions, file handle) ---------- */
 const DB={db:null,
@@ -332,7 +344,7 @@ async function getFile(id){return (await DB.get("files",id))||memFiles[id]||(typ
 async function delFile(id){delete memFiles[id];await DB.del("files",id);if(typeof svDelFile==="function")svDelFile(id)}
 
 let persistT=null, dirtySnap=false, lastHtmlAt=0;
-function persist(){ S.savedAt=Date.now(); try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){} dirtySnap=true; updateSaved(); scheduleAutoHtml(); if(typeof svSchedule==="function")svSchedule(); }
+function persist(){ ensureRowIds(S); S.savedAt=Date.now(); try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){} dirtySnap=true; updateSaved(); scheduleAutoHtml(); if(typeof svSchedule==="function")svSchedule(); }
 function touch(){ clearTimeout(persistT); persistT=setTimeout(persist,350); }
 async function snapshot(label){
   await DB.put("versions",{id:Date.now()+Math.random(),at:Date.now(),label,nDays:Object.keys(S.days).length,data:JSON.stringify(S)});
@@ -1084,7 +1096,7 @@ const ACT={
     Object.assign(D,mv);D[t+"_n"]=n-1;touch();render()},
   shipImp:()=>$("fShip").click(),
   tab:b=>{tab=b.dataset.v;render()},lang:b=>{lang=S.settings.lang=b.dataset.v;try{localStorage.setItem("assy-lang",lang)}catch(x){}persist();render()},
-  add:async b=>{rows(b.dataset.s).push({});touch();render();const last=document.querySelectorAll(`[data-s="${b.dataset.s}"][data-i="${rows(b.dataset.s).length-1}"]`);if(last[0]&&!last[0].closest(".g"))last[0].focus()},
+  add:async b=>{rows(b.dataset.s).push({_id:makeRowId()});touch();render();const last=document.querySelectorAll(`[data-s="${b.dataset.s}"][data-i="${rows(b.dataset.s).length-1}"]`);if(last[0]&&!last[0].closest(".g"))last[0].focus()},
   del:async b=>{const R=rows(b.dataset.s),i=+b.dataset.i;if(!isEmptyRow(R[i])&&!await confirmBox(T("cDelRow"),T("del"),true))return;R.splice(i,1);touch();render()},
   prev:()=>{const ds=dates(),i=ds.indexOf(S.cur);if(i>0)goDay(ds[i-1])},next:()=>{const ds=dates(),i=ds.indexOf(S.cur);if(i<ds.length-1)goDay(ds[i+1])},
   newDay:actNewDay,delDay:actDelDay,newMonth:actNewMonth,delMonth:actDelMonth,
@@ -1192,7 +1204,7 @@ function mcApply(s,r0,c0,grid){
   let nr=grid.length,rowCut=false;if(r0+nr>MC_MAXR){nr=Math.max(0,MC_MAXR-r0);rowCut=true}
   const wide=Math.max(...grid.map(r=>r.length)),avail=ed.length-p,used=Math.min(wide,avail);
   for(let gi=0;gi<nr;gi++){
-    while(R.length<=r0+gi)R.push({});
+    while(R.length<=r0+gi)R.push({_id:makeRowId()});
     const r=R[r0+gi];let setT=false,setH=false;
     for(let gj=0;gj<used;gj++){const col=cols[ed[p+gj]];if(gj>=grid[gi].length)continue;r[col[0]]=mcConv(col,grid[gi][gj]);if(s==="e"){if(col[0]==="s"||col[0]==="r")setT=true;if(col[0]==="h")setH=true}}
     if(s==="e"&&setT&&!setH)stopHours(r,r0+gi)}
@@ -1306,20 +1318,23 @@ async function svFetch(path,opt={},retry=true){
 function svSet(st){SV.st=st;if(st==="ok")SV.at=Date.now();updateSaved()}
 async function svInit(){
   if(!/^https?:$/.test(location.protocol))return null;
-  try{const r=await svFetch("/api/db");if(!r.ok)return null;const j=await r.json();if(!j||!j.ok)return null;SV.on=true;SV.rev=j.rev??j.revision??0;SV.baseState=j.state?clone(j.state):null;return j}catch(e){return null}}
+  try{const r=await svFetch("/api/db");if(!r.ok)return null;const j=await r.json();if(!j||!j.ok)return null;SV.on=true;SV.rev=j.rev??j.revision??0;SV.baseState=j.state?clone(toV3(j.state)):null;return j}catch(e){return null}}
 function svSchedule(){if(!SV.on)return;SV.dirty=true;svSet("saving");clearTimeout(SV.t);SV.t=setTimeout(svPush,1200)}
 async function svPush(){
   if(!SV.on)return;if(SV.busy){clearTimeout(SV.t);SV.t=setTimeout(svPush,800);return}
   SV.busy=true;SV.dirty=false;
   const sentState=clone(S), baseState=SV.baseState?clone(SV.baseState):null;
 
-console.log("STATE DEBUG:", sentState);
-console.log("DAYS DEBUG:", sentState?.days);
-console.log("DAYS TYPE:", typeof sentState?.days);
-console.log("IS DAYS ARRAY:", Array.isArray(sentState?.days));
   try{const r=await svFetch("/api/db",{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({state:sentState,baseState,baseRev:SV.rev,by:(S.days&&S.days[S.cur]&&S.days[S.cur].writer)||""})});
     const j=await r.json().catch(()=>({}));
-    if(r.status===409&&j.state){await snapshot("v_conflict");const k=keepUser();S=toV3(j.state);Object.assign(S.settings,k);SV.rev=j.rev??j.revision??SV.rev;SV.baseState=clone(j.state);try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}render();svSet("ok");toast(T("svConflict"),"err")}
+    if(r.status===409&&j.state){
+      // Keep the exact submitted draft before accepting the server snapshot.
+      await DB.put("versions",{id:Date.now()+Math.random(),at:Date.now(),label:"v_conflict_local",nDays:Object.keys(sentState.days||{}).length,data:JSON.stringify(sentState)});
+      const k=keepUser();S=toV3(j.state);Object.assign(S.settings,k);
+      SV.rev=j.rev??j.revision??SV.rev;SV.baseState=clone(j.state);
+      try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}
+      render();svSet("ok");toast(T("svConflict"),"err");
+    }
     else if(r.ok&&j.ok){SV.rev=j.rev??j.revision??SV.rev;SV.baseState=clone(j.state||sentState);svSet(SV.dirty?"saving":"ok")}
     else throw new Error(j.error||r.status)}
   catch(e){SV.dirty=true;svSet("err");clearTimeout(SV.t);SV.t=setTimeout(svPush,8000)}
