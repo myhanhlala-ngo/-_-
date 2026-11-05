@@ -343,8 +343,8 @@ async function putFile(o){memFiles[o.id]=o;await DB.put("files",o);if(typeof svP
 async function getFile(id){return (await DB.get("files",id))||memFiles[id]||(typeof svGetFile==="function"?await svGetFile(id):null)}
 async function delFile(id){delete memFiles[id];await DB.del("files",id);if(typeof svDelFile==="function")svDelFile(id)}
 
-let persistT=null, dirtySnap=false, lastHtmlAt=0;
-function persist(){ ensureRowIds(S); S.savedAt=Date.now(); try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){} dirtySnap=true; updateSaved(); scheduleAutoHtml(); if(typeof svSchedule==="function")svSchedule(); }
+let persistT=null, dirtySnap=false, lastHtmlAt=0, syncEditSeq=0;
+function persist(){ ensureRowIds(S); S.savedAt=Date.now(); syncEditSeq++; try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){} dirtySnap=true; updateSaved(); scheduleAutoHtml(); if(typeof svSchedule==="function")svSchedule(); }
 function touch(){ clearTimeout(persistT); persistT=setTimeout(persist,350); }
 async function snapshot(label){
   await DB.put("versions",{id:Date.now()+Math.random(),at:Date.now(),label,nDays:Object.keys(S.days).length,data:JSON.stringify(S)});
@@ -1323,30 +1323,66 @@ function svSchedule(){if(!SV.on)return;SV.dirty=true;svSet("saving");clearTimeou
 async function svPush(){
   if(!SV.on)return;if(SV.busy){clearTimeout(SV.t);SV.t=setTimeout(svPush,800);return}
   SV.busy=true;SV.dirty=false;
-  const sentState=clone(S), baseState=SV.baseState?clone(SV.baseState):null;
-
-  try{const r=await svFetch("/api/db",{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({state:sentState,baseState,baseRev:SV.rev,by:(S.days&&S.days[S.cur]&&S.days[S.cur].writer)||""})});
+  const sentState=clone(S), sentSeq=syncEditSeq, baseState=SV.baseState?clone(SV.baseState):null;
+  try{
+    const r=await svFetch("/api/db",{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({state:sentState,baseState,baseRev:SV.rev,by:(sentState.days&&sentState.days[sentState.cur]&&sentState.days[sentState.cur].writer)||""})});
     const j=await r.json().catch(()=>({}));
     if(r.status===409&&j.state){
-      // Keep the exact submitted draft before accepting the server snapshot.
+      // Keep both drafts recoverable, then let the user choose the authoritative value.
+      const liveDraft=clone(S);
       await DB.put("versions",{id:Date.now()+Math.random(),at:Date.now(),label:"v_conflict_local",nDays:Object.keys(sentState.days||{}).length,data:JSON.stringify(sentState)});
-      const k=keepUser();S=toV3(j.state);Object.assign(S.settings,k);
+      if(syncEditSeq!==sentSeq){
+        await DB.put("versions",{id:Date.now()+Math.random(),at:Date.now(),label:"v_conflict_live",nDays:Object.keys(liveDraft.days||{}).length,data:JSON.stringify(liveDraft)});
+      }
+      const k=keepUser(),cur=S.cur;
       SV.rev=j.rev??j.revision??SV.rev;SV.baseState=clone(j.state);
-      try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}
-      render();svSet("ok");toast(T("svConflict"),"err");
+      const paths=Array.isArray(j.conflicts)?j.conflicts:[];
+      const pathText=paths.slice(0,12).map(x=>`<div style="padding:4px 0;border-bottom:1px solid var(--line);font-size:12px;word-break:break-word">${esc(x)}</div>`).join("");
+      const choice=await modal({title:"Phát hiện xung đột dữ liệu",wide:true,width:680,
+        body:`<div class="note" style="margin:0 0 12px">Một người khác đã lưu dữ liệu trước. Bản sửa của bạn đã được giữ trong Lịch sử phiên bản. Hãy chọn dữ liệu muốn sử dụng.</div><div style="max-height:180px;overflow:auto;margin-bottom:12px">${pathText||"<div class=note>Hai phiên bản có thay đổi đồng thời.</div>"}</div><div class="note">• Giữ dữ liệu máy chủ: tải phiên bản mới nhất về máy này.<br>• Giữ bản sửa của tôi: gửi lại bản nháp dựa trên phiên bản máy chủ mới nhất.</div>`,
+        actions:[{v:"server",label:"Giữ dữ liệu máy chủ"},{v:"mine",label:"Giữ bản sửa của tôi",cls:"pri"}]});
+      const draft=syncEditSeq===sentSeq?sentState:liveDraft;
+      if(choice.v==="mine"){
+        S=toV3(draft);Object.assign(S.settings,k);if(S.days[cur])S.cur=cur;
+        try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}
+        render();SV.baseState=clone(j.state);SV.dirty=true;
+        clearTimeout(SV.t);SV.t=setTimeout(svPush,250);
+        toast("Đã giữ bản sửa. Đang đồng bộ lại…","ok");
+      }else{
+        S=toV3(j.state);Object.assign(S.settings,k);if(S.days[cur])S.cur=cur;
+        try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}
+        render();SV.baseState=clone(j.state);SV.dirty=false;
+        toast("Đã tải dữ liệu mới nhất từ máy chủ.","ok");
+      }
+      svSet("ok");
     }
-    else if(r.ok&&j.ok){SV.rev=j.rev??j.revision??SV.rev;SV.baseState=clone(j.state||sentState);svSet(SV.dirty?"saving":"ok")}
-    else throw new Error(j.error||r.status)}
-  catch(e){SV.dirty=true;svSet("err");clearTimeout(SV.t);SV.t=setTimeout(svPush,8000)}
-  finally{SV.busy=false}}
+    else if(r.ok&&j.ok){
+      SV.rev=j.rev??j.revision??SV.rev;SV.baseState=clone(j.state||sentState);
+      if(syncEditSeq===sentSeq&&j.state){
+        const k=keepUser(),cur=S.cur;S=toV3(j.state);Object.assign(S.settings,k);if(S.days[cur])S.cur=cur;
+        try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}
+        render();
+      }
+      if(syncEditSeq!==sentSeq){SV.dirty=true;clearTimeout(SV.t);SV.t=setTimeout(svPush,300)}
+      else svSet("ok");
+    }
+    else throw new Error(j.error||r.status);
+  }catch(e){SV.dirty=true;svSet("err");clearTimeout(SV.t);SV.t=setTimeout(svPush,8000)}
+  finally{SV.busy=false}
+}
 async function svPoll(){
   if(!SV.on||SV.busy||SV.dirty||document.hidden||document.querySelector(".mask"))return;
-  if(Date.now()-SV.typed<15000||MC.drag||MC.sel)return;
-  try{const r=await svFetch("/api/db?meta=1",{},false);if(!r.ok){svSet("off");return}const m=await r.json();if(SV.st==="off")svSet("ok");
-    const remoteRev=m.rev??m.revision??0;if(remoteRev===SV.rev)return;const f=await(await svFetch("/api/db",{},false)).json();if(!f.ok||!f.state||SV.dirty)return;
-    const k=keepUser(),cur=S.cur;S=toV3(f.state);Object.assign(S.settings,k);if(S.days[cur])S.cur=cur;SV.rev=f.rev??f.revision??remoteRev;SV.baseState=clone(f.state);
-    try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}render();svSet("ok");toast(T("svPull"),"ok")}
-  catch(e){svSet("off")}}
+  // Short quiet period: keep active typing safe without leaving other clients stale for 15 seconds.
+  if(Date.now()-SV.typed<5000||MC.drag||MC.sel)return;
+  try{
+    const r=await svFetch("/api/db?meta=1",{},false);if(!r.ok){svSet("off");return}const m=await r.json();if(SV.st==="off")svSet("ok");
+    const remoteRev=m.rev??m.revision??0;if(remoteRev===SV.rev)return;
+    const f=await(await svFetch("/api/db",{},false)).json();if(!f.ok||!f.state||SV.dirty)return;
+    const k=keepUser(),cur=S.cur;S=toV3(f.state);Object.assign(S.settings,k);if(S.days[cur])S.cur=cur;
+    SV.rev=f.rev??f.revision??remoteRev;SV.baseState=clone(f.state);
+    try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}render();svSet("ok");toast(T("svPull"),"ok");
+  }catch(e){svSet("off")}
+}
 const svStatus=()=>!SV.on?"":` · <b style="color:${SV.st==="err"||SV.st==="off"?"#F5A3A3":SV.st==="saving"?"#F0CC7A":"#8FE0B4"}">☁ ${esc(T(SV.st==="saving"?"svSaving":SV.st==="err"?"svErr":SV.st==="off"?"svOff":"svOk"))}${SV.st==="ok"&&SV.at?" "+esc(fmtStamp(SV.at).split(" ")[lang==="vi"?0:1]):""}</b>`;
 async function svPutFile(o){if(!SV.on||!o||!o.blob)return;if(o.blob.size>5.5*1048576){toast(T("svFileBig",{f:o.name||o.id}),"err");return}
   try{const r=await svFetch("/api/db/file/"+encodeURIComponent(o.id),{method:"PUT",headers:{"content-type":o.type||"application/octet-stream","x-file-name":encodeURIComponent(o.name||o.id)},body:o.blob});if(!r.ok&&r.status===503)toast("Chưa cấu hình R2 REPORT_FILES: tệp đính kèm hiện chỉ lưu trên máy này.","err")}catch(e){}}
