@@ -205,14 +205,48 @@ function mergeMeta(base, current, desired, conflicts) {
 
 function auditDiff(oldValue, newValue, path = "", out = []) {
   if (same(oldValue, newValue)) return out;
-  const oldObj = isObject(oldValue), newObj = isObject(newValue);
-  if (oldObj || newObj) {
-    const oldMap = oldObj ? oldValue : {}, newMap = newObj ? newValue : {};
-    const keys = new Set([...Object.keys(oldMap), ...Object.keys(newMap)]);
-    for (const key of keys) auditDiff(oldMap[key], newMap[key], path ? `${path}.${key}` : key, out);
+
+  // Xử lý mảng: ghi nhận từng phần tử riêng
+  if (Array.isArray(oldValue) || Array.isArray(newValue)) {
+    const oldArr = Array.isArray(oldValue) ? oldValue : [];
+    const newArr = Array.isArray(newValue) ? newValue : [];
+    const max = Math.max(oldArr.length, newArr.length);
+
+    for (let i = 0; i < max; i++) {
+      auditDiff(oldArr[i], newArr[i], `${path}[${i}]`, out);
+    }
     return out;
   }
-  out.push({ path: path || "value", oldValue, newValue });
+
+  // Xử lý đối tượng: ghi nhận từng trường riêng
+  const oldObj = isObject(oldValue);
+  const newObj = isObject(newValue);
+
+  if (oldObj || newObj) {
+    const oldMap = oldObj ? oldValue : {};
+    const newMap = newObj ? newValue : {};
+    const keys = new Set([
+      ...Object.keys(oldMap),
+      ...Object.keys(newMap)
+    ]);
+
+    for (const key of keys) {
+      auditDiff(
+        oldMap[key],
+        newMap[key],
+        path ? `${path}.${key}` : key,
+        out
+      );
+    }
+    return out;
+  }
+
+  out.push({
+    path: path || "value",
+    oldValue,
+    newValue
+  });
+
   return out;
 }
 
