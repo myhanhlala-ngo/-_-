@@ -921,15 +921,23 @@ async function actAudit(){
     const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||r.status);
     const rows=j.items||[];
     const fieldName=p=>{
-      const names={writer:"Người lập báo cáo",checker:"Người kiểm tra",p:"Mục dữ liệu (p)"};
-      return String(p||"").split(".").map(k=>names[k]||k.replace(/[_-]/g," ")).join(" › ");
+      const names={writer:"Người lập báo cáo",checker:"Người kiểm tra",p:"Dữ liệu sản xuất",f:"Xưởng",item:"Hạng mục",plan:"Sản lượng kế hoạch",act:"Sản lượng thực tế",_c:"Tỷ lệ hoàn thành",rsn:"Nguyên nhân",rdt:"Chi tiết",q:"Kiểm tra chất lượng",e:"Dừng thiết bị",s:"Giao hàng",n:"Model mới",w:"Lỗi WORST"};
+      const raw=String(p||"");
+      if(raw==="p")return names.p;
+      const m=raw.match(/^p\[(\d+)\](?:\.(.+))?$/);
+      if(m){const row=Number(m[1])+1;return `Dữ liệu sản xuất › Dòng ${row}`+(m[2]?` › ${names[m[2]]||m[2].replace(/[_-]/g," ")}`:"")}
+      return raw.split(".").map(k=>names[k]||k.replace(/[_-]/g," ")).join(" › ");
     };
-    const value=x=>{
+    const value=(x,path)=>{
       if(x===null||x===undefined||x==="")return '<span class="muted">(trống)</span>';
       let v=x;try{v=JSON.parse(x)}catch{}
       if(typeof v==="string")return esc(v);
       if(typeof v==="number"||typeof v==="boolean")return esc(String(v));
-      return `<code style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px">${esc(JSON.stringify(v))}</code>`;
+      // Các bản ghi cũ lưu toàn bộ mảng p dưới một trường JSON; chỉ tóm tắt để tránh tràn giao diện.
+      if(path==="p"&&Array.isArray(v))return `<span class="muted">Danh sách dữ liệu: ${v.length} dòng (bản ghi lịch sử cũ)</span>`;
+      if(Array.isArray(v))return `<span class="muted">Danh sách: ${v.length} mục</span>`;
+      if(v&&typeof v==="object")return `<span class="muted">Dữ liệu gồm ${Object.keys(v).length} trường</span>`;
+      return esc(String(v));
     };
     const stamp=x=>{
       const d=new Date(Number(x)<1e12?Number(x)*1000:Number(x));
@@ -949,8 +957,8 @@ async function actAudit(){
           <td style="font-size:12px;white-space:nowrap;vertical-align:top">${stamp(x.created_at)}</td>
           <td style="vertical-align:top"><b>${esc(x.editor||"-")}</b></td>
           <td style="vertical-align:top;overflow-wrap:anywhere">${esc(fieldName(x.field_path))}</td>
-          <td style="vertical-align:top;overflow-wrap:anywhere">${value(x.old_value)}</td>
-          <td style="vertical-align:top;overflow-wrap:anywhere">${value(x.new_value)}</td>
+          <td style="vertical-align:top;overflow-wrap:anywhere">${value(x.old_value,x.field_path)}</td>
+          <td style="vertical-align:top;overflow-wrap:anywhere">${value(x.new_value,x.field_path)}</td>
         </tr>`;
       }).join(""):`<tr><td colspan="5" class="empty">Chưa có lịch sử chỉnh sửa cho ngày này.</td></tr>`}</tbody></table></div>
       <div class="note" style="margin-top:8px">Lịch sử ghi nhận các trường có thay đổi. Tên người sửa là tên được nhập trong ứng dụng.</div>`;
