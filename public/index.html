@@ -920,9 +920,50 @@ async function actAudit(){
     const r=await svFetch(`/api/db/audit?day=${encodeURIComponent(dayKey)}&limit=300`,{},false);
     const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||r.status);
     const rows=j.items||[];
-    const val=x=>{if(x===null||x===undefined)return "(trống)";try{return JSON.stringify(JSON.parse(x))}catch{return String(x)}};
-    const body=`<div class="note">Ngày báo cáo: <b>${esc(dayKey)}</b> · ${rows.length} thay đổi gần nhất</div><div style="overflow:auto;max-height:60vh"><table style="width:100%;border-collapse:collapse"><thead><tr><th>Thời gian</th><th>Người sửa</th><th>Trường dữ liệu</th><th>Giá trị cũ</th><th>Giá trị mới</th></tr></thead><tbody>${rows.length?rows.map(x=>`<tr><td style="white-space:nowrap">${esc(fmtStamp(x.created_at))}</td><td>${esc(x.editor||"-")}</td><td>${esc(x.field_path)}</td><td>${esc(val(x.old_value))}</td><td>${esc(val(x.new_value))}</td></tr>`).join(""):`<tr><td colspan="5" class="empty">Chưa có lịch sử chỉnh sửa cho ngày này.</td></tr>`}</tbody></table></div>`;
-    await modal({title:"Lịch sử chỉnh sửa",body,actions:[{v:"close",label:T("close")}]});
+    const fieldName=p=>{
+      const names={writer:"Người lập báo cáo",checker:"Người kiểm tra",p:"Mục dữ liệu (p)"};
+      return String(p||"").split(".").map(k=>names[k]||k.replace(/[_-]/g," ")).join(" › ");
+    };
+    const value=x=>{
+      if(x===null||x===undefined||x==="")return '<span class="muted">(trống)</span>';
+      let v=x;try{v=JSON.parse(x)}catch{}
+      if(typeof v==="string")return esc(v);
+      if(typeof v==="number"||typeof v==="boolean")return esc(String(v));
+      return `<code style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px">${esc(JSON.stringify(v))}</code>`;
+    };
+    const stamp=x=>{
+      const d=new Date(Number(x)<1e12?Number(x)*1000:Number(x));
+      return isNaN(d)?esc(fmtStamp(x)):esc(d.toLocaleString("vi-VN",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit"}));
+    };
+    const body=`<div class="note" style="margin-bottom:10px">Ngày báo cáo: <b>${esc(dayKey)}</b> · ${rows.length} thay đổi gần nhất</div>
+      <div style="display:flex;gap:8px;align-items:center;margin:8px 0 12px;flex-wrap:wrap">
+        <input id="auditSearch" type="search" placeholder="Tìm theo người sửa, trường dữ liệu hoặc giá trị..." style="flex:1;min-width:220px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)">
+        <span id="auditCount" class="note">${rows.length} bản ghi</span>
+      </div>
+      <div style="overflow:auto;max-height:58vh;border:1px solid var(--line);border-radius:8px">
+      <table style="width:100%;min-width:760px;border-collapse:collapse;table-layout:fixed">
+      <thead><tr><th style="width:155px">Thời gian</th><th style="width:105px">Người sửa</th><th style="width:150px">Trường dữ liệu</th><th>Giá trị cũ</th><th>Giá trị mới</th></tr></thead>
+      <tbody id="auditRows">${rows.length?rows.map(x=>{
+        const search=[x.editor,x.field_path,x.old_value,x.new_value].join(" ").toLowerCase();
+        return `<tr data-audit-row data-search="${esc(search)}">
+          <td style="font-size:12px;white-space:nowrap;vertical-align:top">${stamp(x.created_at)}</td>
+          <td style="vertical-align:top"><b>${esc(x.editor||"-")}</b></td>
+          <td style="vertical-align:top;overflow-wrap:anywhere">${esc(fieldName(x.field_path))}</td>
+          <td style="vertical-align:top;overflow-wrap:anywhere">${value(x.old_value)}</td>
+          <td style="vertical-align:top;overflow-wrap:anywhere">${value(x.new_value)}</td>
+        </tr>`;
+      }).join(""):`<tr><td colspan="5" class="empty">Chưa có lịch sử chỉnh sửa cho ngày này.</td></tr>`}</tbody></table></div>
+      <div class="note" style="margin-top:8px">Lịch sử ghi nhận các trường có thay đổi. Tên người sửa là tên được nhập trong ứng dụng.</div>`;
+    await modal({title:"Lịch sử chỉnh sửa",body,actions:[{v:"close",label:T("close")}],onMount:m=>{
+      const input=m.querySelector("#auditSearch"), count=m.querySelector("#auditCount");
+      input?.addEventListener("input",()=>{
+        const q=input.value.trim().toLowerCase();let n=0;
+        m.querySelectorAll("[data-audit-row]").forEach(row=>{
+          const show=!q||row.dataset.search.includes(q);row.style.display=show?"":"none";if(show)n++;
+        });
+        if(count)count.textContent=`${n} bản ghi`;
+      });
+    }});
   }catch(e){toast("Không tải được lịch sử: "+(e.message||e),"err")}
 }
 async function actHistory(){const vs=((await DB.all("versions"))||[]).sort((a,b)=>b.at-a.at);
