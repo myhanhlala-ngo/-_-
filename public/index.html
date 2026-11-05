@@ -97,7 +97,13 @@ select.st-계획{color:#455A69;font-weight:700}select.st-진행중{color:#1F5FA8
 /* ---------- modal / toast ---------- */
 .mask{position:fixed;inset:0;background:rgba(15,28,38,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
 .modal{background:var(--card);color:var(--ink);border-radius:10px;width:min(460px,100%);max-height:90vh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.25)}
-.modal.wide{width:min(980px,100%)}
+.modal.wide{width:min(1180px,calc(100vw - 32px))}
+.audit-table th,.audit-table td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;white-space:normal;overflow-wrap:anywhere;word-break:break-word;line-height:1.4}
+.audit-table th{position:sticky;top:0;background:var(--navy);color:#fff;z-index:1}
+.audit-field{font-weight:700;color:var(--ink);min-width:220px}
+.audit-value{font-size:13px;min-width:170px}
+.audit-legacy{display:inline-block;color:var(--muted);font-size:12px;font-style:italic}
+@media(max-width:700px){.modal.wide{width:calc(100vw - 16px)}.audit-table th,.audit-table td{padding:7px 8px}}
 .mh{background:var(--navy);color:#fff;padding:12px 16px;border-radius:10px 10px 0 0;font-weight:700;display:flex;justify-content:space-between;align-items:center}
 .mh .x{background:transparent;border:0;color:#fff;font-size:18px}
 .mb{padding:16px;overflow:auto}.mf{padding:12px 16px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
@@ -921,22 +927,19 @@ async function actAudit(){
     const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||r.status);
     const rows=j.items||[];
     const fieldName=p=>{
-      const names={writer:"Người lập báo cáo",checker:"Người kiểm tra",p:"Dữ liệu sản xuất",f:"Xưởng",item:"Hạng mục",plan:"Sản lượng kế hoạch",act:"Sản lượng thực tế",_c:"Tỷ lệ hoàn thành",rsn:"Nguyên nhân",rdt:"Chi tiết",q:"Kiểm tra chất lượng",e:"Dừng thiết bị",s:"Giao hàng",n:"Model mới",w:"Lỗi WORST"};
       const raw=String(p||"");
-      if(raw==="p")return names.p;
-      const m=raw.match(/^p\[(\d+)\](?:\.(.+))?$/);
-      if(m){const row=Number(m[1])+1;return `Dữ liệu sản xuất › Dòng ${row}`+(m[2]?` › ${names[m[2]]||m[2].replace(/[_-]/g," ")}`:"")}
-      return raw.split(".").map(k=>names[k]||k.replace(/[_-]/g," ")).join(" › ");
+      const names={writer:"Người lập báo cáo",checker:"Người kiểm tra",f:"Xưởng",item:"Model / Hạng mục",plan:"Kế hoạch sản xuất",act:"Sản lượng thực tế",rate:"Tỷ lệ đạt",rsn:"Lý do không đạt",rdt:"Lý do chi tiết",p:"Dữ liệu sản xuất"};
+      const item=raw.match(/^p\[(\d+)\](?:\.(.+))?$/);
+      if(item)return `Sản xuất › Dòng ${Number(item[1])+1}${item[2]?" › "+(names[item[2]]||item[2].replace(/[_-]/g," ")):""}`;
+      return names[raw]||raw.split(".").map(k=>names[k]||k.replace(/[_-]/g," ")).join(" › ");
     };
-    const value=(x,path)=>{
+    const value=x=>{
       if(x===null||x===undefined||x==="")return '<span class="muted">(trống)</span>';
       let v=x;try{v=JSON.parse(x)}catch{}
       if(typeof v==="string")return esc(v);
       if(typeof v==="number"||typeof v==="boolean")return esc(String(v));
-      // Các bản ghi cũ lưu toàn bộ mảng p dưới một trường JSON; chỉ tóm tắt để tránh tràn giao diện.
-      if(path==="p"&&Array.isArray(v))return `<span class="muted">Danh sách dữ liệu: ${v.length} dòng (bản ghi lịch sử cũ)</span>`;
-      if(Array.isArray(v))return `<span class="muted">Danh sách: ${v.length} mục</span>`;
-      if(v&&typeof v==="object")return `<span class="muted">Dữ liệu gồm ${Object.keys(v).length} trường</span>`;
+      if(Array.isArray(v))return `<span class="audit-legacy">Danh sách dữ liệu: ${v.length} dòng · bản ghi cũ</span>`;
+      if(v&&typeof v==="object")return `<span class="audit-legacy">Dữ liệu tổng hợp · bản ghi cũ</span>`;
       return esc(String(v));
     };
     const stamp=x=>{
@@ -948,21 +951,21 @@ async function actAudit(){
         <input id="auditSearch" type="search" placeholder="Tìm theo người sửa, trường dữ liệu hoặc giá trị..." style="flex:1;min-width:220px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)">
         <span id="auditCount" class="note">${rows.length} bản ghi</span>
       </div>
-      <div style="overflow:auto;max-height:58vh;border:1px solid var(--line);border-radius:8px">
-      <table style="width:100%;min-width:760px;border-collapse:collapse;table-layout:fixed">
-      <thead><tr><th style="width:155px">Thời gian</th><th style="width:105px">Người sửa</th><th style="width:150px">Trường dữ liệu</th><th>Giá trị cũ</th><th>Giá trị mới</th></tr></thead>
+      <div class="audit-table-wrap" style="overflow:auto;max-height:62vh;border:1px solid var(--line);border-radius:8px">
+      <table class="audit-table" style="width:100%;min-width:980px;border-collapse:collapse;table-layout:fixed">
+      <thead><tr><th style="width:165px">Thời gian</th><th style="width:125px">Người sửa</th><th style="width:270px">Trường dữ liệu</th><th style="width:210px">Giá trị cũ</th><th style="width:210px">Giá trị mới</th></tr></thead>
       <tbody id="auditRows">${rows.length?rows.map(x=>{
         const search=[x.editor,x.field_path,x.old_value,x.new_value].join(" ").toLowerCase();
         return `<tr data-audit-row data-search="${esc(search)}">
           <td style="font-size:12px;white-space:nowrap;vertical-align:top">${stamp(x.created_at)}</td>
           <td style="vertical-align:top"><b>${esc(x.editor||"-")}</b></td>
-          <td style="vertical-align:top;overflow-wrap:anywhere">${esc(fieldName(x.field_path))}</td>
-          <td style="vertical-align:top;overflow-wrap:anywhere">${value(x.old_value,x.field_path)}</td>
-          <td style="vertical-align:top;overflow-wrap:anywhere">${value(x.new_value,x.field_path)}</td>
+          <td class="audit-field">${esc(fieldName(x.field_path))}</td>
+          <td class="audit-value">${value(x.old_value)}</td>
+          <td class="audit-value">${value(x.new_value)}</td>
         </tr>`;
       }).join(""):`<tr><td colspan="5" class="empty">Chưa có lịch sử chỉnh sửa cho ngày này.</td></tr>`}</tbody></table></div>
       <div class="note" style="margin-top:8px">Lịch sử ghi nhận các trường có thay đổi. Tên người sửa là tên được nhập trong ứng dụng.</div>`;
-    await modal({title:"Lịch sử chỉnh sửa",body,actions:[{v:"close",label:T("close")}],onMount:m=>{
+    await modal({title:"Lịch sử chỉnh sửa",body,wide:true,width:1180,actions:[{v:"close",label:T("close")}],onMount:m=>{
       const input=m.querySelector("#auditSearch"), count=m.querySelector("#auditCount");
       input?.addEventListener("input",()=>{
         const q=input.value.trim().toLowerCase();let n=0;
