@@ -1673,7 +1673,7 @@ async function actSavePng(){
   const sv=await svInit();
   render();
   if(sv){await svStart(sv);
-    setInterval(svPoll,20000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)svPoll()})}
+    setInterval(svPoll,2000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)svPoll()})}
   render();await resumeAutoHtml();
 })();
 </script></body></html>
