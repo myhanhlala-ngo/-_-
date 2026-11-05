@@ -926,13 +926,63 @@ async function actAudit(){
     const r=await svFetch(`/api/db/audit?day=${encodeURIComponent(dayKey)}&limit=300`,{},false);
     const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||r.status);
     const rows=j.items||[];
-    const fieldName=p=>{
-      const raw=String(p||"");
-      const names={writer:"Người lập báo cáo",checker:"Người kiểm tra",f:"Xưởng",item:"Model / Hạng mục",plan:"Kế hoạch sản xuất",act:"Sản lượng thực tế",rate:"Tỷ lệ đạt",rsn:"Lý do không đạt",rdt:"Lý do chi tiết",p:"Dữ liệu sản xuất"};
-      const item=raw.match(/^p\[(\d+)\](?:\.(.+))?$/);
-      if(item)return `Sản xuất › Dòng ${Number(item[1])+1}${item[2]?" › "+(names[item[2]]||item[2].replace(/[_-]/g," ")):""}`;
-      return names[raw]||raw.split(".").map(k=>names[k]||k.replace(/[_-]/g," ")).join(" › ");
-    };
+    const fieldName = p => {
+  const raw = String(p || "");
+
+  const names = {
+    writer: "Người lập báo cáo",
+    checker: "Người kiểm tra",
+
+    f: "Xưởng",
+    item: "Model / Hạng mục",
+    plan: "Kế hoạch sản xuất",
+    act: "Sản lượng thực tế",
+    rate: "Tỷ lệ đạt",
+    rsn: "Lý do không đạt",
+    rdt: "Lý do chi tiết",
+
+    note: "Ghi chú",
+    tot: "Tổng quân số",
+    work: "Số người đi làm",
+    leave: "Nghỉ phép",
+    absent: "Vắng không phép",
+
+    name: "Tên Model",
+    basis: "Cơ sở báo cáo"
+  };
+
+  // Bảng sản xuất
+  const production = raw.match(/^p\[(\d+)\](?:\.(.+))?$/);
+  if (production) {
+    return `Sản xuất › Dòng ${Number(production[1]) + 1}` +
+      (production[2]
+        ? " › " + (names[production[2]] || production[2])
+        : "");
+  }
+
+  // Bảng nhân lực: a[0][1].note
+  const manpower = raw.match(/^a(?:\[(\d+)\]|\.(\d+)|_(\d+))(?:(?:\[(\d+)\]|\.(\d+)|_(\d+)))?[._]?(.+)?$/);
+
+  if (manpower) {
+    const first = manpower[1] ?? manpower[2] ?? manpower[3];
+    const second = manpower[4] ?? manpower[5] ?? manpower[6];
+    const field = manpower[7] || "";
+
+    return `Nhân lực › Nhóm ${Number(first) + 1}` +
+      (second !== undefined ? ` › Dòng ${Number(second) + 1}` : "") +
+      (field ? ` › ${names[field] || field}` : "");
+  }
+
+  // Danh mục Model: s[13].name
+  const models = raw.match(/^s\[(\d+)\]\.(.+)$/);
+  if (models) {
+    return `Danh mục Model › Dòng ${Number(models[1]) + 1}` +
+      ` › ${names[models[2]] || models[2]}`;
+  }
+
+  return names[raw] ||
+    raw.split(".").map(k => names[k] || k.replace(/[_-]/g, " ")).join(" › ");
+};
     const value=x=>{
       if(x===null||x===undefined||x==="")return '<span class="muted">(trống)</span>';
       let v=x;try{v=JSON.parse(x)}catch{}
