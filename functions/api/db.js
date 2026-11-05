@@ -23,16 +23,48 @@ const clone = v => v == null ? v : JSON.parse(JSON.stringify(v));
 
 const isObject = v => v !== null && typeof v === "object" && !Array.isArray(v);
 
-// Three-way merge at field level:
-// - unchanged by the editor => keep server value
-// - changed only by the editor => accept editor value
-// - changed by both to same value => keep it
-// - changed differently by both => keep server value and report exact field path
-// Arrays are treated as atomic values to avoid unsafe index-based merges.
+// Three-way merge by field. Report rows carry stable _id values so array
+// edits never depend on their current visual/index position.
 function mergeThreeWay(base, current, desired, path, conflicts) {
   if (same(base, desired)) return clone(current);
   if (same(current, base)) return clone(desired);
   if (same(current, desired)) return clone(current);
+
+  const keyed = [base, current, desired].every(v => Array.isArray(v) &&
+    v.every(row => row && typeof row === "object" && !Array.isArray(row) && typeof row._id === "string" && row._id));
+  if (keyed) {
+    const bm = new Map(base.map(x => [x._id, x]));
+    const cm = new Map(current.map(x => [x._id, x]));
+    const dm = new Map(desired.map(x => [x._id, x]));
+    const ids = [...new Set([...base.map(x=>x._id), ...current.map(x=>x._id), ...desired.map(x=>x._id)])];
+    const out = [];
+    for (const id of ids) {
+      const b = bm.get(id), c = cm.get(id), d = dm.get(id);
+      const rowPath = `${path || "rows"}[${id}]`;
+      // A deletion on one side is safe only if the other side left the row unchanged.
+      if (b && !c && d) {
+        if (same(b, d)) continue;
+        conflicts.push(`${rowPath}.__delete_edit`); out.push(clone(d)); continue;
+      }
+      if (b && c && !d) {
+        if (same(b, c)) continue;
+        conflicts.push(`${rowPath}.__edit_delete`); out.push(clone(c)); continue;
+      }
+      if (!b && c && d) {
+        if (same(c, d)) out.push(clone(c));
+        else { conflicts.push(`${rowPath}.__add_collision`); out.push(clone(c)); }
+        continue;
+      }
+      if (!b && c) { out.push(clone(c)); continue; }
+      if (!b && d) { out.push(clone(d)); continue; }
+      if (b && c && d) {
+        const row = mergeThreeWay(b, c, d, rowPath, conflicts);
+        if (row !== undefined) out.push(row);
+      }
+    }
+    return out;
+  }
+
   if (isObject(base) && isObject(current) && isObject(desired)) {
     const out = {};
     const keys = new Set([...Object.keys(base), ...Object.keys(current), ...Object.keys(desired)]);
@@ -205,14 +237,48 @@ function mergeMeta(base, current, desired, conflicts) {
 
 function auditDiff(oldValue, newValue, path = "", out = []) {
   if (same(oldValue, newValue)) return out;
-  const oldObj = isObject(oldValue), newObj = isObject(newValue);
-  if (oldObj || newObj) {
-    const oldMap = oldObj ? oldValue : {}, newMap = newObj ? newValue : {};
-    const keys = new Set([...Object.keys(oldMap), ...Object.keys(newMap)]);
-    for (const key of keys) auditDiff(oldMap[key], newMap[key], path ? `${path}.${key}` : key, out);
+
+  // Xử lý mảng: ghi nhận từng phần tử riêng
+  if (Array.isArray(oldValue) || Array.isArray(newValue)) {
+    const oldArr = Array.isArray(oldValue) ? oldValue : [];
+    const newArr = Array.isArray(newValue) ? newValue : [];
+    const max = Math.max(oldArr.length, newArr.length);
+
+    for (let i = 0; i < max; i++) {
+      auditDiff(oldArr[i], newArr[i], `${path}[${i}]`, out);
+    }
     return out;
   }
-  out.push({ path: path || "value", oldValue, newValue });
+
+  // Xử lý đối tượng: ghi nhận từng trường riêng
+  const oldObj = isObject(oldValue);
+  const newObj = isObject(newValue);
+
+  if (oldObj || newObj) {
+    const oldMap = oldObj ? oldValue : {};
+    const newMap = newObj ? newValue : {};
+    const keys = new Set([
+      ...Object.keys(oldMap),
+      ...Object.keys(newMap)
+    ]);
+
+    for (const key of keys) {
+      auditDiff(
+        oldMap[key],
+        newMap[key],
+        path ? `${path}.${key}` : key,
+        out
+      );
+    }
+    return out;
+  }
+
+  out.push({
+    path: path || "value",
+    oldValue,
+    newValue
+  });
+
   return out;
 }
 
@@ -415,10 +481,26 @@ async function handleFile(request, env, id) {
   return json({ ok: false, error: "Method not allowed" }, 405);
 }
 
-function denied(request, env) {
+  function denied(request, env) {
   const token = env.APP_TOKEN;
-  return token && request.headers.get("x-app-token") !== token
-    ? json({ ok: false, error: "Unauthorized" }, 401) : null;
+
+  // Không cho phép truy cập nếu máy chủ chưa cấu hình mật khẩu
+  if (!token) {
+    return json({
+      ok: false,
+      error: "Server authentication is not configured"
+    }, 500);
+  }
+
+  // Từ chối nếu không có token hoặc token không chính xác
+  if (request.headers.get("x-app-token") !== token) {
+    return json({
+      ok: false,
+      error: "Unauthorized"
+    }, 401);
+  }
+
+  return null;
 }
 
 export async function onRequestGet({ request, env }) {
