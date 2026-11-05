@@ -559,12 +559,3 @@ export async function onRequestDelete({ request, env }) {
   try { return await handleFile(request, env, decodeURIComponent(fileMatch[1])); }
   catch (e) { return json({ ok: false, error: String(e?.message || e) }, 500); }
 }
-
-export async function onRequestDelete({ request, env }) {
-  const url = new URL(request.url);
-  const fileMatch = url.pathname.match(/^\/api\/db\/file\/([^/]+)$/);
-  if (!fileMatch) return json({ ok: false, error: "Not found" }, 404);
-  const auth = denied(request, env); if (auth) return auth;
-  try { return await handleFile(request, env, decodeURIComponent(fileMatch[1])); }
-  catch (e) { return json({ ok: false, error: String(e?.message || e) }, 500); }
-}
