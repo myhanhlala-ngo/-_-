@@ -68,11 +68,12 @@ body.report h2 button.imp{display:none}@media print{h2 button.imp{display:none}}
 .prog-toast{min-width:260px}.prog-toast .pb{height:5px;background:rgba(255,255,255,.25);border-radius:3px;margin-top:6px}.prog-toast .pb i{display:block;height:100%;width:0;background:#8FE0B4;border-radius:3px;transition:width .2s}
 .sc{overflow-x:auto}.amw>div+div{margin-top:18px}.amw td{vertical-align:middle}.amw td select{text-align:center;text-align-last:center}.amw button.x{border:0;background:transparent;color:var(--bad);font-size:16px;cursor:pointer;opacity:.4;padding:0 6px}.amw button.x:hover{opacity:1}.amw>div{min-width:0}.amw table{min-width:0}.amw th{white-space:normal}.amw td input{min-width:0}.amh{font-size:13px;margin:0 0 6px}
 table{border-collapse:collapse;width:100%;min-width:800px}
-th,td{border:1px solid var(--line);padding:2px;vertical-align:top}
+th,td{border:1px solid var(--line);padding:2px;vertical-align:middle}
 th{background:var(--navy);color:#fff;font-weight:500;padding:5px 6px;white-space:nowrap}
 td.y{background:var(--y)}
 td.g{background:var(--g);padding:6px 8px;text-align:right;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
 td.g.c{text-align:center}
+td.g.hauto{padding:0}td.g.hauto input{background:transparent;font-weight:700;color:var(--ink);cursor:default;text-align:center}td.g.hauto input:focus{outline:none;box-shadow:none}
 td.g.neg{background:#FBD3D6;color:#B3261E}@media(prefers-color-scheme:dark){td.g.neg{background:#4A2328;color:#F5A3A3}}
 tr.t td.neg{background:#FBD3D6!important;color:#B3261E}
 td.dup input{color:var(--muted)}body.report td.dup input{color:transparent}body.report td.dup{border-top-color:transparent}
@@ -425,6 +426,7 @@ function cell(s,i,c,v){const[k,,t,o]=c,a=`data-s="${s}" data-i="${i}" data-k="${
   if(t==="calc")return k==="_n"?`<td class="g c">${i+1}</td>`:`<td class="g" data-c="${s}:${i}${s==="s"?":"+k:""}"></td>`;
   if(t==="sel"){const op=!v||o.includes(v)?o:[...o,v];return`<td class="y"><select ${a}${k==="st"&&s==="k"&&v?` class="st-${esc(v)}"`:""}><option value=""></option>${op.map(x=>`<option value="${esc(x)}"${x===v?" selected":""}>${esc(lab(x))}</option>`).join("")}</select></td>`}
   if(t==="area")return`<td class="y"><textarea rows="1" ${a}>${esc(v)}</textarea></td>`;
+  if(t==="num"&&s==="e"&&k==="h")return`<td class="g hauto"><input ${a} class="n" data-num="1" readonly tabindex="-1" value="${esc(fmtNum(v))}"></td>`;
   if(t==="num")return`<td class="y${s==="k"?" prog":""}"><input ${a} class="n${s==="s"?" dash":""}" data-num="1" inputmode="decimal"${s==="s"?' placeholder="-"':""} value="${esc(fmtNum(v))}">${s==="k"?`<span class="bar" style="width:${Math.max(0,Math.min(100,num(v)))}%"></span>`:""}</td>`;
   if(t==="time")return`<td class="y"><input ${a} class="tm" data-tm="1" inputmode="numeric" maxlength="8" placeholder="hh:mm" value="${esc(v)}"></td>`;
   if(t==="date")return`<td class="y"><input ${a} type="date" value="${esc(v)}"></td>`;
@@ -980,10 +982,10 @@ $("app").addEventListener("input",e=>{const t=e.target,d=t.dataset;
   if(t.tagName==="TEXTAREA")fitTA(t);markEdit();calc()});
 $("app").addEventListener("change",e=>{const t=e.target;if(t.id==="repDate")renameDay(t.value);
   else if(t.tagName==="SELECT"&&t.dataset&&(t.dataset.s||t.dataset.top))commitEdit()}); // a choice in a drop-down is complete → save now
-document.addEventListener("focusin",e=>{const t=e.target;if(t.dataset&&t.dataset.num)t.value=t.value.replace(/,/g,"")});
+document.addEventListener("focusin",e=>{const t=e.target;if(t.dataset&&t.dataset.tm)t._v0=t.value;if(t.dataset&&t.dataset.num)t.value=t.value.replace(/,/g,"")});
 document.addEventListener("focusout",e=>{const t=e.target,d=t.dataset||{};
   if(d.num)t.value=fmtNum(t.value);
-  if(d.tm){const nv=normTime(t.value),r=rows(d.s)[+d.i];if(nv!==t.value)t.value=nv;if(r[d.k]!==nv){r[d.k]=nv;editPending=true}if(d.s==="e")stopHours(r,d.i);calc()}
+  if(d.tm&&t.value!==t._v0){const nv=normTime(t.value),r=rows(d.s)[+d.i];if(nv!==t.value)t.value=nv;if(r[d.k]!==nv){r[d.k]=nv;editPending=true}if(d.s==="e")stopHours(r,d.i);calc()}
   if(d.s==="e"&&d.k==="h"&&d.i!=null){const r=rows("e")[+d.i];if(r&&r._hAuto)t.value=fmtNum(r.h)}
   if(editPending&&t.closest&&t.closest("#app")&&(d.s||d.top))commitEdit()});
 /* ---- typing only changes the screen; the report is saved + synced when the cursor leaves the cell ---- */
@@ -1113,7 +1115,7 @@ function mcApply(s,r0,c0,grid){
     while(R.length<=r0+gi)R.push({});
     const r=R[r0+gi];let setT=false,setH=false;
     for(let gj=0;gj<used;gj++){const col=cols[ed[p+gj]];if(gj>=grid[gi].length)continue;r[col[0]]=mcConv(col,grid[gi][gj]);if(s==="e"){if(col[0]==="s"||col[0]==="r")setT=true;if(col[0]==="h")setH=true}}
-    if(s==="e"&&setT&&!setH)stopHours(r,r0+gi)}
+    if(s==="e"){if(setH)delete r._hAuto;if(setT||setH)stopHours(r,r0+gi)}}
   touch();
   MC.sel={s,r1:r0,r2:r0+nr-1,c1:ed[p],c2:ed[p+used-1]};
   render();
@@ -1136,7 +1138,7 @@ function mcCopy(){
 function mcClearCells(){
   const n=mcNorm(MC.sel),R=rows(n.s),cols=SEC[n.s].cols,ed=mcEd(n.s,n.c1,n.c2);if(!ed.length)return null;
   mcSnap(n.s);let cnt=0;
-  for(let r=n.r1;r<=Math.min(n.r2,R.length-1);r++){ed.forEach(c=>{R[r][cols[c][0]]="";});cnt++}
+  for(let r=n.r1;r<=Math.min(n.r2,R.length-1);r++){ed.forEach(c=>{if(n.s==="e"&&cols[c][0]==="h")return;R[r][cols[c][0]]="";});if(n.s==="e")stopHours(R[r],r);cnt++}
   touch();render();return{r:cnt,c:ed.length}}
 function mcDoUndo(){
   const u=MC.undo;if(!u||u.cur!==S.cur)return;
@@ -1547,7 +1549,7 @@ function renderKeepFocus(){const a=document.activeElement,d=a&&a.dataset?{...a.d
    ← / →        : cell left / right when the cursor is at the start / end of the text
    Enter        : cell below   ·  Shift+Enter: cell above (in a multi-line text Shift+Enter / Alt+Enter = new line)
    Leaving the cell saves + syncs as before. */
-const NAV_SEL="input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=button]):not([disabled]),textarea:not([disabled]),select:not([disabled])";
+const NAV_SEL="input:not([readonly]):not([type=checkbox]):not([type=radio]):not([type=file]):not([type=button]):not([disabled]),textarea:not([disabled]),select:not([disabled])";
 function navCands(tbl){return[...tbl.querySelectorAll(NAV_SEL)].filter(x=>x.offsetParent!==null&&x.closest("td"))}
 function navMove(el,dir){const tbl=el.closest("table");if(!tbl)return false;const all=navCands(tbl);if(all.length<2)return false;
   const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let best=null,bd=Infinity;
