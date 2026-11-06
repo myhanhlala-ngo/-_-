@@ -1440,11 +1440,11 @@ async function svPush(){
     else if(r.ok&&j.ok){
       const rev=j.rev??j.revision??SV.rev;
       if(j.state){
-        if(syncEditSeq===sentSeq){const k=keepUser(),cur=S.cur;S=toV3(j.state);Object.assign(S.settings,k);if(S.days[cur])S.cur=cur;
-          try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}render()}
+        if(syncEditSeq===sentSeq){if(!mgSame(S,j.state)){const k=keepUser(),cur=S.cur;S=toV3(j.state);Object.assign(S.settings,k);if(S.days[cur])S.cur=cur;
+          try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}renderKeepFocus()}}
         else{ // I kept typing while saving: put my newest edits on top of the saved result
           const mg=mergeStates(sentState,clone(S),toV3(clone(j.state)));mg.conflicts.forEach(c=>c.apply(mgCopy(c.mine)));
-          const k=keepUser(),cur=S.cur;S=toV3(mg.finish());Object.assign(S.settings,k);if(S.days[cur])S.cur=cur;try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}render()}}
+          const k=keepUser(),cur=S.cur;S=toV3(mg.finish());Object.assign(S.settings,k);if(S.days[cur])S.cur=cur;try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}renderKeepFocus()}}
       SV.rev=rev;SV.baseState=clone(j.state||sentState);svSaveBase();
       if(syncEditSeq!==sentSeq||(j.state&&!mgSame(S,j.state))){SV.dirty=true;clearTimeout(SV.t);SV.t=setTimeout(svPush,300)}
       else svSet("ok");
@@ -1534,10 +1534,53 @@ window.addEventListener("focus",()=>{if(typeof svPoll==="function")svPoll()});
 /* redraw without kicking the cursor out of the cell being typed in */
 function renderKeepFocus(){const a=document.activeElement,d=a&&a.dataset?{...a.dataset}:null,inApp=a&&a.closest&&a.closest("#app");
   let ss=null,se=null;try{ss=a.selectionStart;se=a.selectionEnd}catch(e){}
-  render();if(!inApp||!d||!(d.s||d.top))return;
+  const sx=window.scrollX,sy=window.scrollY,all0=[...document.querySelectorAll("#app *")],wraps=all0.map((x,i)=>[i,x.tagName+"."+x.className,x.scrollLeft,x.scrollTop]).filter(w=>w[2]||w[3]);
+  render();
+  const all1=[...document.querySelectorAll("#app *")],back=()=>{window.scrollTo(sx,sy);wraps.forEach(([i,sig,l,t])=>{const x=all1[i];if(x&&x.tagName+"."+x.className===sig){x.scrollLeft=l;x.scrollTop=t}})};back();requestAnimationFrame(back);
+  if(!inApp||!d||!(d.s||d.top))return;
   const sel=d.top?`[data-top="${d.top}"]`:`[data-s="${d.s}"][data-i="${d.i}"][data-k="${d.k}"]`,n=document.querySelector("#app "+sel);
-  if(n){n.focus();try{if(ss!=null)n.setSelectionRange(ss,se)}catch(e){}}}
+  if(n){n.focus({preventScroll:true});try{if(ss!=null)n.setSelectionRange(ss,se)}catch(e){}back()}}
 {const r3=render;render=function(){r3();document.querySelectorAll('#app [data-s="e"][data-k="h"]').forEach(x=>x.title=T("stopHTip"))}}
+
+/* ---- move between cells with ↑ ↓ ← → and Enter (like Excel) ----
+   ↑ / ↓        : cell above / below (in a multi-line text: only from the first / last line)
+   ← / →        : cell left / right when the cursor is at the start / end of the text
+   Enter        : cell below   ·  Shift+Enter: cell above (in a multi-line text Shift+Enter / Alt+Enter = new line)
+   Leaving the cell saves + syncs as before. */
+const NAV_SEL="input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=button]):not([disabled]),textarea:not([disabled]),select:not([disabled])";
+function navCands(tbl){return[...tbl.querySelectorAll(NAV_SEL)].filter(x=>x.offsetParent!==null&&x.closest("td"))}
+function navMove(el,dir){const tbl=el.closest("table");if(!tbl)return false;const all=navCands(tbl);if(all.length<2)return false;
+  const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let best=null,bd=Infinity;
+  if(dir==="left"||dir==="right"){
+    const tr0=el.closest("tr");all.forEach(x=>{if(x===el)return;const q=x.getBoundingClientRect(),xtd=x.closest("td").getBoundingClientRect();if(x.closest("tr")!==tr0&&(cy<xtd.top-1||cy>xtd.bottom+1))return;const qx=q.left+q.width/2,dx=qx-cx;
+      if(dir==="right"?dx>2:dx<-2){const d=Math.abs(dx);if(d<bd){bd=d;best=x}}})}
+  else{const rows=[...tbl.rows],tr=el.closest("tr"),i0=rows.indexOf(tr),step=dir==="down"?1:-1;
+    for(let i=i0+step;i>=0&&i<rows.length&&!best;i+=step){const cs=all.filter(x=>x.closest("tr")===rows[i]);
+      cs.forEach(x=>{const q=x.getBoundingClientRect(),d=Math.abs(q.left+q.width/2-cx);if(d<bd){bd=d;best=x}})}}
+  if(!best)return false;
+  best.focus({preventScroll:true});
+  const hd=$("hd"),top=(hd?hd.getBoundingClientRect().bottom:0)+40,q=best.getBoundingClientRect();
+  if(q.top<top)window.scrollBy(0,q.top-top);else if(q.bottom>window.innerHeight-20)window.scrollBy(0,q.bottom-window.innerHeight+40);
+  const tw=best.closest("div");if(tw&&tw.scrollWidth>tw.clientWidth){const wr=tw.getBoundingClientRect();if(q.left<wr.left)tw.scrollLeft-=wr.left-q.left+20;else if(q.right>wr.right)tw.scrollLeft+=q.right-wr.right+20}
+  try{if(best.tagName==="TEXTAREA"||best.tagName==="INPUT")best.select()}catch(e){}
+  return true}
+document.addEventListener("keydown",e=>{
+  if(e.defaultPrevented||e.isComposing||e.keyCode===229||e.ctrlKey||e.metaKey)return;
+  const el=e.target;if(!el||!el.closest||!el.closest("#app")||!el.closest("td")||!el.matches(NAV_SEL)||document.querySelector(".mask"))return;
+  const k=e.key,tag=el.tagName,ta=tag==="TEXTAREA",v=el.value||"";let s=0,en=0,hasSel=false;
+  try{s=el.selectionStart;en=el.selectionEnd;hasSel=s!=null}catch(x){}
+  let dir=null;
+  if(k==="Enter"){
+    if(ta&&(e.shiftKey||e.altKey)){if(e.altKey){e.preventDefault();el.setRangeText("\n",s,en,"end");el.dispatchEvent(new Event("input",{bubbles:true}))}return}
+    dir=e.shiftKey?"up":"down"}
+  else if(e.altKey||e.shiftKey)return;
+  else if(k==="ArrowUp"){if(ta&&hasSel&&v.slice(0,s).includes("\n"))return;dir="up"}
+  else if(k==="ArrowDown"){if(ta&&hasSel&&v.slice(en).includes("\n"))return;dir="down"}
+  else if(k==="ArrowLeft"){if(hasSel&&tag!=="SELECT"&&!(s===0&&(en===0||en===v.length)))return;dir="left"}
+  else if(k==="ArrowRight"){if(hasSel&&tag!=="SELECT"&&!(en===v.length&&(s===v.length||s===0)))return;dir="right"}
+  else return;
+  if(navMove(el,dir))e.preventDefault();
+  else if(k==="Enter"&&!ta)e.preventDefault()},true);
 const svStatus=()=>!SV.on?"":` · <b style="color:${SV.st==="err"||SV.st==="off"?"#F5A3A3":SV.st==="saving"?"#F0CC7A":"#8FE0B4"}">☁ ${esc(T(SV.st==="saving"?"svSaving":SV.st==="err"?"svErr":SV.st==="off"?"svOff":"svOk"))}${SV.st==="ok"&&SV.at?" "+esc(fmtStamp(SV.at).split(" ")[lang==="vi"?0:1]):""}</b>`;
 async function svPutFile(o){if(!SV.on||!o||!o.blob)return;if(o.blob.size>5.5*1048576){toast(T("svFileBig",{f:o.name||o.id}),"err");return}
   try{await svFetch("/api/db/file/"+encodeURIComponent(o.id),{method:"PUT",headers:{"content-type":o.type||"application/octet-stream","x-file-name":encodeURIComponent(o.name||o.id)},body:o.blob})}catch(e){}}
