@@ -191,21 +191,21 @@ const $ = i => document.getElementById(i);
    1. TEXT  [ko, vi, en]
    ===================================================================== */
 const W={title:["조립팀 일일 업무 보고","Báo cáo công việc hằng ngày – Bộ phận Lắp ráp","Assembly Team Daily Report"],tabR:["일일보고","Báo cáo ngày","Daily report"],tabK:["개선과제","Đề tài cải tiến","Improvement tasks"],
-date:["보고일자","Ngày báo cáo","Report date"],writer:["작성자","Người lập","Prepared by"],checker:["확인자","Người duyệt","Checked by"],basis:["보고기준","Cơ sở báo cáo","Basis"],b0:["전일 실적","Kết quả hôm trước","Previous day"],b1:["당일 계획","Kế hoạch trong ngày","Same-day plan"],
+date:["보고일자","Ngày báo cáo","Report date"],writer:["작성자","Người lập","Prepared by"],checker:["승인자","Người duyệt","Approved by"],basis:["보고기준","Cơ sở báo cáo","Basis"],b0:["전일 실적","Kết quả hôm trước","Previous day"],b1:["당일 계획","Kế hoạch trong ngày","Same-day plan"],
 addRow:["+ 행 추가","+ Thêm dòng","+ Add row"],delRow:["행 삭제","Xóa dòng","Delete row"],
 s1:["생산 운영 현황","Tình hình vận hành sản xuất","Production status"],s2:["검사 품질","Chất lượng kiểm tra","Inspection quality"],s3:["설비 정지 시간","Thời gian dừng thiết bị","Equipment downtime"],s4:["출하 현황","Xuất hàng","Shipping"],s5:["신모델 준비","Chuẩn bị model mới","New model readiness"],s6:["WORST 불량 TOP 3","Lỗi WORST TOP 3","WORST defects TOP 3"],s7:["특이사항 (지원 요청 및 의사결정)","Đặc biệt (hỗ trợ & quyết định)","Notes (support & decisions)"],sk:["개선과제 관리","Quản lý đề tài cải tiến","Improvement task tracker"],top:["설비 정지 원인 TOP 5 (전체 기간)","Top 5 nguyên nhân dừng máy (toàn bộ)","Top 5 downtime causes (all)"],
-factory:["공장","Xưởng","Plant"],plan:["생산 계획","Kế hoạch SX","Plan"],act:["생산 실적","Thực tế SX","Actual"],rate:["달성률","Tỷ lệ đạt","Rate"],issue:["주요 이슈 및 조치 (담당)","Vấn đề chính & xử lý (PT)","Issues & actions (PIC)"],mi:["모델/품목","Model/Item","Model/Item"],rsn:["미달성사유","Lý do không đạt","Shortfall reason"],rdt:["상세사유","Lý do chi tiết","Detail"],
-insType:["검사 구분","Loại kiểm tra","Inspection"],model:["모델","Model","Model"],insQty:["검사수","SL kiểm","Inspected"],ngQty:["불량수","SL lỗi","Defects"],ngRate:["불량률","Tỷ lệ lỗi","Defect rate"],mainDef:["주요 불량","Lỗi chính","Main defect"],causeAct:["원인 / 조치","Nguyên nhân / Xử lý","Cause / Action"],pic:["담당자","Phụ trách","PIC"],
-eq:["모델 / 라인 / 설비·지그","Model / Line / Thiết bị, jig","Model / Line / Equipment"],stopStart:["정지 시작","Bắt đầu dừng","Stop time"],recover:["복구 시각","Chạy lại","Restart"],stopH:["정지시간(분)","Thời gian dừng (phút)","Downtime (min)"],editing:["수정 중 – 칸을 벗어나면 저장","Đang sửa – rời ô để lưu","Editing – leave the cell to save"],stopHTip:["정지 시작 → 재가동 시간으로 자동 계산","Tự tính từ giờ bắt đầu dừng → giờ chạy lại","Calculated from stop start → restart"],cnt:["횟수","Số lần","Count"],stopCause:["정지 원인","Nguyên nhân dừng","Stop cause"],remedy:["조치내용","Nội dung xử lý / Biện pháp khắc phục","Corrective action"],
-item:["품목","Mã hàng","Item"],pname:["품명","Tên hàng","Part"],diff:["차이","Chênh lệch","Diff"],rateS:["달성율(%)","Tỷ lệ đạt (%)","Achv. (%)"],sPlan:["계획","Kế hoạch","Plan"],sAct:["실적","Kết quả","Actual"],sNote:["원인 및 대책","Nguyên nhân & đối sách","Cause & countermeasure"],line:["Line","Line","Line"],proc:["공정","Công đoạn","Process"],status:["진행 상태","Tình trạng","Status"],remark:["비고","Ghi chú","Remarks"],rank:["순위","Hạng","Rank"],
+factory:["공장","Xưởng","Plant"],plan:["생산 계획","Kế hoạch SX","Plan"],act:["생산 실적","Thực tế SX","Actual"],rate:["달성률","Tỷ lệ đạt","Achievement"],issue:["주요 이슈 및 조치 (담당)","Vấn đề chính & xử lý (PT)","Issues & actions (PIC)"],mi:["모델/품목","Model/Item","Model/Item"],rsn:["미달성사유","Lý do không đạt","Shortfall reason"],rdt:["상세사유","Lý do chi tiết","Detail"],
+insType:["검사 구분","Loại kiểm tra","Inspection"],model:["모델","Model","Model"],insQty:["검사 수량","SL kiểm","Inspected qty"],ngQty:["불량 수량","SL lỗi","Defect qty"],ngRate:["불량률","Tỷ lệ lỗi","Defect rate"],mainDef:["주요 불량","Lỗi chính","Main defect"],causeAct:["원인 / 조치","Nguyên nhân / Xử lý","Cause / Action"],pic:["담당자","Phụ trách","PIC"],
+eq:["모델 / 라인 / 설비·지그","Model / Line / Thiết bị, jig","Model / Line / Equipment"],stopStart:["정지 시작","Bắt đầu dừng","Stop time"],recover:["재가동 시각","Chạy lại","Restart time"],stopH:["정지시간(분)","Thời gian dừng (phút)","Downtime (min)"],editing:["수정 중 – 칸을 벗어나면 저장","Đang sửa – rời ô để lưu","Editing – leave the cell to save"],stopHTip:["정지 시작 → 재가동 시간으로 자동 계산","Tự tính từ giờ bắt đầu dừng → giờ chạy lại","Calculated from stop start → restart"],cnt:["횟수","Số lần","Count"],stopCause:["정지 원인","Nguyên nhân dừng","Stop cause"],remedy:["조치 내용 / 개선 대책","Nội dung xử lý / Biện pháp khắc phục","Action / Countermeasure"],
+item:["품번","Mã hàng","Item code"],pname:["품명","Tên hàng","Item name"],diff:["차이","Chênh lệch","Diff"],rateS:["달성률(%)","Tỷ lệ đạt (%)","Achv. (%)"],sPlan:["계획","Kế hoạch","Plan"],sAct:["실적","Kết quả","Actual"],sNote:["원인 및 대책","Nguyên nhân & đối sách","Cause & countermeasure"],line:["Line","Line","Line"],proc:["공정","Công đoạn","Process"],status:["진행 상태","Tình trạng","Status"],remark:["비고","Ghi chú","Remarks"],rank:["순위","Hạng","Rank"],
 defType:["불량 유형","Loại lỗi","Defect type"],occ:["발생 수량","SL phát sinh","Qty"],causeAn:["원인 분석","Phân tích nguyên nhân","Cause analysis"],fix:["개선 대책","Đối sách cải tiến","Countermeasure"],due:["목표 일자","Ngày mục tiêu","Target date"],issue7:["주요 이슈","Vấn đề chính","Main issues"],support:["지원 요청 / 타부서 협조","Yêu cầu hỗ trợ / phối hợp","Support request"],
-no:["번호","STT","No."],cat:["분류","Phân loại","Category"],line2:["공장 / 라인","Xưởng / Line","Plant / Line"],task:["과제명","Tên đề tài","Task"],prob:["문제 / 현황","Vấn đề / Hiện trạng","Problem / Status"],due2:["목표일","Hạn","Due"],pct:["진행률(%)","Tiến độ (%)","Progress (%)"],st:["상태","Trạng thái","State"],total:["TOTAL","TỔNG","TOTAL"],
+no:["번호","STT","No."],cat:["분류","Phân loại","Category"],line2:["공장 / 라인","Xưởng / Line","Plant / Line"],task:["과제명","Tên đề tài","Task"],prob:["문제 / 현황","Vấn đề / Hiện trạng","Problem / Status"],due2:["완료 기한","Hạn","Due"],pct:["진행률(%)","Tiến độ (%)","Progress (%)"],st:["상태","Trạng thái","State"],total:["TOTAL","TỔNG","TOTAL"],
 sumK:["전체 {t}건 · 진행중 {a} · 지연 {b} · 완료 {c}","Tổng {t} · Đang làm {a} · Trễ {b} · Xong {c}","Total {t} · In progress {a} · Delayed {b} · Done {c}"],sumE:["합계 {h}분","Tổng {h} phút","Total {h} min"],
 month:["월","Tháng","Month"],dayL:["일자","Ngày","Day"],nDays:["{n}일","{n} ngày","{n} days"],prevDay:["이전 날짜","Ngày trước","Previous day"],nextDay:["다음 날짜","Ngày sau","Next day"],
 viewReport:["보고서 보기","Xem báo cáo","Report view"],viewEdit:["편집 모드","Chỉnh sửa","Edit mode"],collapse:["기능 접기","Ẩn chức năng","Hide tools"],expand:["기능 펼치기","Hiện chức năng","Show tools"],saved:["저장됨","Đã lưu","Saved"],notSaved:["저장 전","Chưa lưu","Not saved"],
 bNewDay:["새 날짜 입력","Nhập ngày mới","New day"],bDelDay:["이 날짜 삭제","Xóa số liệu ngày","Delete this day"],bNewMonth:["새 달 추가","Thêm tháng mới","New month"],bDelMonth:["달 전체 삭제","Xóa cả tháng","Delete month"],
 bUpload:["데이터 업로드","Upload dữ liệu (CSV/Excel)","Upload data (CSV/Excel)"],bOrig:["원본 엑셀 자동 반영","Nạp file Excel gốc (tự động)","Load original Excel (auto)"],bPdf:["PDF 일보 업로드","Nạp PDF báo cáo ngày","Attach daily PDF"],bBackup:["데이터 백업","Sao lưu dữ liệu","Backup data"],bRestore:["백업 파일 복원","Khôi phục từ file sao lưu","Restore from backup"],
-bHistory:["버전 기록","Lịch sử phiên bản","Version history"],bExcel:["엑셀 내보내기","Xuất Excel","Export Excel"],bHtml:["최신 HTML 다운로드","Tải HTML mới nhất","Download latest HTML"],bAuto:["HTML 자동 저장","Bật tự động lưu HTML","Auto-save HTML"],bAutoOn:["HTML 자동 저장 중","Đang tự động lưu HTML","Auto-saving HTML"],bAutoPaused:["HTML 자동 저장 재개","Tiếp tục tự động lưu HTML","Resume HTML auto-save"],bPng:["이미지 저장","Tải về ảnh (PNG)","Download image (PNG)"],pngMaking:["이미지를 만드는 중…","Đang tạo ảnh…","Creating image…"],pngDone:["이미지 {n}장을 저장했습니다","Đã tải {n} ảnh","Downloaded {n} image(s)"],pngFail:["이미지를 만들지 못했습니다","Không tạo được ảnh","Could not create the image"],bSavePdf:["PDF 저장","Tải về PDF","Download PDF"],pdfHint:["인쇄 창에서 '대상(프린터)'을 'PDF로 저장'으로 선택한 뒤 저장을 누르세요","Ở cửa sổ In, mục Máy in chọn 'Lưu dưới dạng PDF' (Save as PDF) rồi bấm Lưu","In the print window set Printer to 'Save as PDF', then click Save"],bPrint:["인쇄/PDF","In / Xuất PDF","Print / PDF"],
+bHistory:["버전 기록","Lịch sử phiên bản","Version history"],bExcel:["엑셀 내보내기","Xuất Excel","Export Excel"],bHtml:["최신 HTML 다운로드","Tải HTML mới nhất","Download latest HTML"],bAuto:["HTML 자동 저장 켜기","Bật tự động lưu HTML","Turn on HTML auto-save"],bAutoOn:["HTML 자동 저장 중","Đang tự động lưu HTML","Auto-saving HTML"],bAutoPaused:["HTML 자동 저장 재개","Tiếp tục tự động lưu HTML","Resume HTML auto-save"],bPng:["이미지 저장","Tải về ảnh (PNG)","Download image (PNG)"],pngMaking:["이미지를 만드는 중…","Đang tạo ảnh…","Creating image…"],pngDone:["이미지 {n}장을 저장했습니다","Đã tải {n} ảnh","Downloaded {n} image(s)"],pngFail:["이미지를 만들지 못했습니다","Không tạo được ảnh","Could not create the image"],bSavePdf:["PDF 저장","Tải về PDF","Download PDF"],pdfHint:["인쇄 창에서 '대상(프린터)'을 'PDF로 저장'으로 선택한 뒤 저장을 누르세요","Ở cửa sổ In, mục Máy in chọn 'Lưu dưới dạng PDF' (Save as PDF) rồi bấm Lưu","In the print window set Printer to 'Save as PDF', then click Save"],bPrint:["인쇄/PDF","In / Xuất PDF","Print / PDF"],
 ok:["확인","Đồng ý","OK"],cancel:["취소","Hủy","Cancel"],close:["닫기","Đóng","Close"],del:["삭제","Xóa","Delete"],restore:["복원","Khôi phục","Restore"],view:["보기","Xem","View"],go:["이동","Chuyển đến","Go"],apply:["반영","Nạp","Import"],
 newDayTitle:["새 날짜 입력","Nhập ngày mới","New day"],newMonthTitle:["새 달 추가","Thêm tháng mới","New month"],pickDate:["날짜","Ngày","Date"],pickMonth:["월","Tháng","Month"],startDate:["첫 날짜","Ngày đầu tiên","First date"],copyMode:["초기 데이터","Dữ liệu ban đầu","Start with"],
 cm_template:["기본 양식 (§n 신모델 준비는 빈 칸)","Biểu mẫu mặc định (mục §n để trống)","Default template (section §n empty)"],cm_copy05:["최근 날짜의 §n 신모델 준비만 복사","Chỉ sao chép mục §n (model mới) từ ngày gần nhất","Copy section §n from the latest day"],cm_copyAll:["최근 날짜 전체 복사","Sao chép toàn bộ ngày gần nhất","Copy the whole latest day"],cm_blank:["빈 양식","Biểu mẫu trống","Blank form"],
@@ -222,7 +222,7 @@ prodRules:["3공장 모델 (한 줄에 하나) · 나머지 ASSEMBLY → 1공장
 stopRules:["공장 구분 규칙 (한 줄: 키워드 => 공장 · 해당 없음 → 1공장)","Quy tắc phân xưởng (mỗi dòng: từ khóa => xưởng · không khớp → 1공장)","Plant rules (one per line: keywords => plant · no match → Plant 1)"],
 keepNote:["직접 수정한 내용(주요 이슈·사유·정지 원인·담당자)은 유지됩니다. 행 수는 데이터에 맞춰 자동으로 늘어나거나 줄어듭니다.","Nội dung bạn đã tự sửa (vấn đề, lý do, nguyên nhân dừng, phụ trách) được giữ nguyên. Số dòng tự tăng / giảm theo số liệu.","Text you edited by hand is kept. Row counts grow or shrink to fit the data."],
 rowsN:["ASSEMBLY / 4F ASSEMBLY {n}행","{n} dòng ASSEMBLY / 4F ASSEMBLY","{n} ASSEMBLY / 4F ASSEMBLY rows"],
-prodDone:["{p} 생산 실적 → {t}","kết quả SX ngày {p} → báo cáo {t}","{p} production → {t} report"],prodMulti:["{n}일 생산 실적 반영","kết quả SX {n} ngày (mỗi ngày → đúng báo cáo của ngày đó)","production for {n} days"],prodNone:["ASSEMBLY / 4F ASSEMBLY 데이터가 없습니다","Không có dữ liệu ASSEMBLY / 4F ASSEMBLY","No ASSEMBLY / 4F ASSEMBLY rows"],
+prodDone:["{p} 생산 실적 → {t}","kết quả SX ngày {p} → báo cáo {t}","{p} production → {t} report"],prodMulti:["{n}일 생산 실적 (날짜별로 해당 보고서에 반영)","kết quả SX {n} ngày (mỗi ngày → đúng báo cáo của ngày đó)","production for {n} days (each day → its own report)"],prodNone:["ASSEMBLY / 4F ASSEMBLY 데이터가 없습니다","Không có dữ liệu ASSEMBLY / 4F ASSEMBLY","No ASSEMBLY / 4F ASSEMBLY rows"],
 stopDone:["{p} 정지 {n}회 → {t}","dừng ngày {p} ({n} lần) → báo cáo {t}","{p} downtime ({n}) → {t} report"],stopMulti:["{n}일 설비 정지 반영","dừng thiết bị {n} ngày","downtime for {n} days"],stopNone:["정지 데이터가 없습니다","Không có dữ liệu dừng","No downtime rows"],stopTotal:["합계 {m}분 · {n}회","Tổng {m} phút · {n} lần","Total {m} min · {n} stops"],
 imported:["반영 완료: {list}","Đã nạp: {list}","Imported: {list}"],
 pdfTitle:["첨부 PDF – {d}","PDF đính kèm – {d}","Attached PDFs – {d}"],pdfEmpty:["첨부된 PDF가 없습니다.","Chưa có PDF nào.","No PDFs attached."],addPdf:["PDF 추가","Thêm PDF","Add PDF"],pdfAdded:["PDF {n}개를 {d}에 첨부했습니다","Đã đính kèm {n} PDF vào ngày {d}","Attached {n} PDF(s) to {d}"],pdfMissing:["파일 데이터 없음","Không còn dữ liệu file","File data missing"],pdfPick:["왼쪽 목록에서 PDF를 선택하세요","Chọn một PDF ở danh sách bên trái","Pick a PDF from the list"],
@@ -261,7 +261,7 @@ const lab=v=>LAB[v]?LAB[v][LI[lang]]:v;
 const PLANT3_DEFAULT=["SM-A576B ASSY CAM DECO","UPPER CAM UW_ASSY","UPPER CAM WIDE_ASSY","SM-F971U ASSY CAM DECO MID","SM-F976U ASSY CAM DECO MID"];
 const STOPR_DEFAULT=["A576 CAM => 3공장","Q8 => 3공장","F971 => 3공장","F976 => 3공장","UPPER CAM => 3공장","A58 => 4공장"];
 const FLAG={ko:'<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#fff"/><circle cx="15" cy="10" r="5" fill="#c60c30"/><path d="M10 10a5 5 0 0 0 10 0z" fill="#003478"/></svg>',vi:'<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#da251d"/><path d="M15 4l1.8 5.5h5.7l-4.6 3.4 1.8 5.4-4.7-3.3-4.7 3.3 1.8-5.4-4.6-3.4h5.7z" fill="#ff0"/></svg>',en:'<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#fff"/><path d="M0 2h30M0 6h30M0 10h30M0 14h30M0 18h30" stroke="#b22234" stroke-width="2"/><rect width="13" height="10.5" fill="#3c3b6e"/></svg>'};
-Object.assign(W,{aNight:["야간","Ca đêm","Night shift"],aNightTot:["야간합계","Tổng ca đêm","Night shift total"],sAM:["조립 인력 현황","Tình hình nhân lực Lắp ráp","Assembly manpower status"],sA:["출근 현황","Tình hình đi làm hằng ngày","Daily attendance"],sM:["계획 대비 출근 인원","Số nhân lực đi làm so với kế hoạch","Manpower vs plan"],aShop:["공장","Xưởng","Plant"],aCa:["근무조","CA","Shift"],aItem:["항목","Hạng mục","Category"],aTot:["총원","Tổng quân số","Headcount"],aWork:["출근","Đi làm","Present"],aLeave:["휴가","Nghỉ phép","Leave"],aAbs:["무단","Vắng không phép","Unexcused"],aRate:["출근율","Tỷ lệ đi làm","Attendance rate"],aDay:["주간","Ca ngày","Day shift"],aReg:["정규직","Chính thức","Regular"],aOut:["용역","Thuê ngoài","Contract"],aX4:["X4-X1","X4-X1","X4-X1"],aDayTot:["주간합계","Tổng ca ngày","Day shift total"],mDept:["부서","Bộ phận","Dept."],mType:["구분","Loại","Type"],mDir:["직접직","Trực tiếp","Direct"],mInd:["간접직","Gián tiếp","Indirect"],mSub:["소계","Cộng","Subtotal"],mTot:["합계","Tổng cộng","Total"],mPlan:["계획","Kế hoạch","Plan"],mAct:["실적","Thực tế","Actual"],mDiff:["차이","Chênh lệch","Diff"],mX1:["조립 X1","Lắp ráp X1","Assembly X1"],mX4:["NOTE PC X4","NOTE PC X4","NOTE PC X4"]});
+Object.assign(W,{aNight:["야간","Ca đêm","Night shift"],aNightTot:["야간합계","Tổng ca đêm","Night shift total"],sAM:["조립 인력 현황","Tình hình nhân lực Lắp ráp","Assembly manpower status"],sA:["출근 현황","Tình hình đi làm hằng ngày","Daily attendance"],sM:["계획 대비 출근 인원","Số nhân lực đi làm so với kế hoạch","Manpower vs plan"],aShop:["공장","Xưởng","Plant"],aCa:["근무조","CA","Shift"],aItem:["항목","Hạng mục","Category"],aTot:["총원","Tổng quân số","Headcount"],aWork:["출근","Đi làm","Present"],aLeave:["휴가","Nghỉ phép","Leave"],aAbs:["무단결근","Vắng không phép","Unexcused absence"],aRate:["출근율","Tỷ lệ đi làm","Attendance rate"],aDay:["주간","Ca ngày","Day shift"],aReg:["정규직","Chính thức","Regular"],aOut:["용역","Thuê ngoài","Contract"],aX4:["X4-X1","X4-X1","X4-X1"],aDayTot:["주간합계","Tổng ca ngày","Day shift total"],mDept:["부서","Bộ phận","Dept."],mType:["구분","Loại","Type"],mDir:["직접직","Trực tiếp","Direct"],mInd:["간접직","Gián tiếp","Indirect"],mSub:["소계","Cộng","Subtotal"],mTot:["합계","Tổng cộng","Total"],mPlan:["계획","Kế hoạch","Plan"],mAct:["실적","Thực tế","Actual"],mDiff:["차이","Chênh lệch","Diff"],mX1:["조립 X1","Lắp ráp X1","Assembly X1"],mX4:["NOTE PC X4","NOTE PC X4","NOTE PC X4"]});
 const SEC={
 p:{no:"01",t:"s1",cols:[["f","factory","sel",FAC],["item","mi","area"],["plan","plan","num"],["act","act","num"],["_c","rate","calc"],["rsn","rsn","area"],["rdt","rdt","area"]]},
 q:{no:"02",t:"s2",cols:[["f","factory","sel",FAC],["type","insType","text"],["model","model","text"],["n","insQty","num"],["ng","ngQty","num"],["_c","ngRate","calc"],["def","mainDef","area"],["act","causeAct","area"],["pic","pic","text"]]},
@@ -1595,6 +1595,175 @@ async function svPutFile(o){if(!SV.on||!o||!o.blob)return;if(o.blob.size>5.5*104
 async function svGetFile(id){if(!SV.on)return null;try{const r=await svFetch("/api/db/file/"+encodeURIComponent(id),{},false);if(!r.ok)return null;const b=await r.blob();const o={id,name:id,type:b.type||"application/pdf",blob:b};await DB.put("files",o);return o}catch(e){return null}}
 async function svDelFile(id){if(!SV.on)return;try{await svFetch("/api/db/file/"+encodeURIComponent(id),{method:"DELETE"},false)}catch(e){}}
 
+/* ===== ASSY_TR — dịch nội dung nhập tay theo thuật ngữ nhà máy (VI ⇄ KO ⇄ EN) =====
+   1. Thay trước các thuật ngữ xưởng bằng đúng từ chuyên ngành của ngôn ngữ đích (từ điển bên dưới)
+      → máy dịch giữ nguyên các từ này, chỉ dịch phần câu còn lại → không còn kiểu "bắn MES" thành "MES 사격".
+   2. Gửi máy dịch với ngôn ngữ nguồn xác định rõ (không để 'auto' nhận nhầm câu không dấu).
+   3. Sửa lại một số cụm máy dịch hay dịch sai.
+   Mỗi dòng từ điển: [tiếng Việt (các cách viết, ngăn bằng |), 한국어 (từ đầu tiên là từ chuẩn), English] */
+window.ASSY_TR = window.ASSY_TR || (function () {
+  var G = [
+    /* [tiếng Việt | cách viết khác, 한국어 chuẩn | cách máy dịch hay viết (sẽ đổi về chuẩn), English (dùng làm từ khóa giữ nghĩa khi dịch)] */
+    /* ---- loại lỗi · 불량 유형 ---- */
+    ['đâm, vập, mẻ|đâm vập mẻ|đâm/vập/mẻ|đâm vập|vập mẻ|đâm', '찍힘|찌그러짐|움푹 들어감|덴트|움푹 패임', 'dent'],
+    ['xước|trầy xước|trầy', '스크래치|스크레치|긁힘|할퀴다', 'scratch'],
+    ['biến dạng|cong vênh', '변형', 'deformation'],
+    ['gãy|gẫy', '파손|부러짐|골절', 'breakage'],
+    ['nứt', '크랙|균열', 'crack'],
+    ['dị vật', '이물|이물질', 'foreign material'],
+    ['bụi bẩn|bụi', '이물(먼지)|먼지|더스트|흙|분진', 'dust'],
+    ['xịt bụi|thổi bụi|xịt khí|thổi khí|xịt air', '에어 블로우|에어블로우|에어블로|에어 블로|에어 블로잉|에어블로잉', 'air blow'],
+    ['vết bẩn|bám bẩn|ố bẩn', '오염', 'contamination'],
+    ['bọt khí', '기포', 'air bubble'],
+    ['vết lõm|lõm', '눌림', 'dent mark'],
+    ['bavia|ba via', '버(Burr)|버어', 'burr'],
+    ['tràn keo|keo tràn', '본드 넘침|접착제 넘침', 'glue overflow'],
+    ['bong tape|tape bị bong|phồng tape', '테이프 들뜸|테이프 박리', 'tape lifting'],
+    ['thiếu tape|sót tape|quên dán tape', '테이프 누락', 'missing tape'],
+    ['thiếu linh kiện|sót linh kiện', '부품 누락', 'missing component'],
+    ['lắp ngược', '역삽|역방향 조립', 'reversed assembly'],
+    ['khe hở|hở khe', '유격|간극', 'gap'],
+    ['lỗi ngoại quan', '외관 불량', 'cosmetic defect'],
+    ['lỗi chức năng|NG chức năng', '기능 불량', 'functional defect'],
+    ['điện trở', '저항', 'resistance'],
+    /* ---- công đoạn · thiết bị · 공정 / 설비 ---- */
+    ['công đoạn trước', '전공정|이전 공정', 'previous process'],
+    ['công đoạn sau', '후공정|다음 공정', 'next process'],
+    ['đầu hút|đầu hít|nozzle hút', '흡착 노즐|흡입 노즐|석션 노즐', 'suction nozzle'],
+    ['tay gắp|tay robot|tay kẹp', '로봇 그리퍼|그리퍼 로봇|피킹 암|로봇 팔', 'robot gripper'],
+    ['băng tải', '컨베이어', 'conveyor'],
+    ['dây curoa|dây cu roa|curoa', '벨트', 'belt'],
+    ['jig', '지그', 'jig'],
+    ['khuôn', '금형', 'mold'],
+    ['thay liệu|thay vật tư', '자재 교체', 'material change'],
+    ['hết case', '케이스 소진', 'out of cases'],
+    ['đổi model|chuyển model', '모델 체인지|모델 변경', 'model change'],
+    ['máy chủ|PC chủ', '메인 PC', 'main PC'],
+    ['phụ liệu', '부자재', 'sub-materials'],
+    ['thiếu vật tư|thiếu liệu|hết liệu|thiếu nguyên vật liệu', '자재 부족|자료 부족|소재 부족|재료 부족', 'material shortage'],
+    ['nguyên vật liệu|vật tư', '자재|자료|소재|재료', 'materials'],
+    ['bị lệch|lệch', '틀어짐|편차|오정렬|정렬 불량|잘못 정렬|어긋남', 'misalignment'],
+    ['sửa lại hàng|làm lại hàng|rework', '재작업', 'rework'],
+    ['bắn MES|quét MES|scan MES', 'MES 등록|MES 촬영|MES 사격|MES 스캔', 'MES registration'],
+    ['đăng ký NG|đăng ký lỗi', '불량 등록', 'NG registration'],
+    ['hàng tháo dỡ nhập lại|hàng tháo dỡ trả về', '해체반입', 'disassembled returns'],
+    ['chi phí thất bại', '실패비용|실패 비용', 'failure cost'],
+    ['dán vinyl|dán vinly', '비닐 부착', 'vinyl attaching'],
+    ['check sheet|checksheet|phiếu kiểm tra', '체크시트|체크 시트', 'check sheet'],
+    ['kiểm tra đầu ca', '초품 검사', 'first-article inspection'],
+    ['bộ phận mua hàng|phòng mua hàng', '구매팀|구매 부서', 'purchasing department'],
+    ['đơn yêu cầu mua hàng|đơn yêu cầu mua', '구매 요청서', 'purchase request form'],
+    ['chờ ký duyệt|chờ ký đơn', '결재 대기', 'awaiting approval'],
+    ['tăng ca', '잔업', 'overtime'],
+    ['ca ngày', '주간', 'day shift'],
+    ['ca đêm', '야간', 'night shift'],
+    ['nhân lực thời vụ|lao động thời vụ', '단기 인력', 'temporary workers']
+  ];
+  var LET = 'A-Za-zÀ-ỹ', VIC = /[ăâđêôơưàáạảãằắặẳẵầấậẩẫèéẹẻẽềếệểễìíịỉĩòóọỏõồốộổỗờớợởỡùúụủũừứựửữỳýỵỷỹ]/i;
+  var IDX = { vi: 0, ko: 1, en: 2 };
+  var rx = function (s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); };
+  /* danh sách thuật ngữ nguồn (cụm dài thay trước) */
+  var CACHE = {};
+  function pairs(from) {
+    if (CACHE[from]) return CACHE[from];
+    var out = [];
+    G.forEach(function (g, gi) {
+      g[IDX[from]].split('|').forEach(function (src, k) { if (src && (from !== 'ko' || k === 0)) out.push([src, g[2], gi]); });
+    });
+    out.sort(function (a, b) { return b[0].length - a[0].length; });
+    return (CACHE[from] = out.map(function (p) {
+      var body = rx(p[0]).replace(/ /g, '\\s+');
+      var re = from === 'ko' ? new RegExp(body, 'g') : new RegExp('(^|[^' + LET + '])(' + body + ')(?=$|[^' + LET + '])', 'gi');
+      return [re, p[1], from === 'ko', p[2]];
+    }));
+  }
+  /* Cách dịch: thuật ngữ xưởng trong câu nguồn được đổi sang từ tiếng Anh chuẩn (máy dịch hiểu đúng nghĩa từ tiếng Anh
+     tốt hơn nhiều so với từ lóng xưởng); sau khi dịch, đổi các từ đó về đúng thuật ngữ chuẩn của ngôn ngữ đích. */
+  function inject(text, from, to) {
+    var used = [];
+    if (!text || from === to || from === 'en' || IDX[from] == null) return { text: text, used: used };
+    var keep = [], t = String(text);
+    pairs(from).forEach(function (p) {
+      t = t.replace(p[0], function () {
+        var a = arguments, lead = p[2] ? '' : a[1];
+        keep.push(p[1]); if (used.indexOf(p[3]) < 0) used.push(p[3]); return lead + '⁣' + (keep.length - 1) + '⁣';
+      });
+    });
+    return { text: t.replace(/⁣(\d+)⁣/g, function (m, i) { return keep[+i]; }), used: used };
+  }
+  function restore(text, to, used) {
+    used.forEach(function (gi) {
+      var g = G[gi], en = g[2], tgt = g[IDX[to]].split('|')[0];
+      if (to !== 'en') text = text.replace(new RegExp('(^|[^A-Za-z])' + rx(en) + '(?=$|[^A-Za-z])', 'gi'), function (m, a) { return a + tgt; });
+      if (to === 'ko') {
+        var vs = g[1].split('|').sort(function (a, b) { return b.length - a.length; }).map(rx);
+        text = text.replace(new RegExp(vs.join('|'), 'g'), tgt);
+      }
+    });
+    return text;
+  }
+  /* cụm máy dịch hay sai → sửa lại */
+  var POST = {
+    ko: [[/MES\s*(촬영|사격|쏘기|발사|스캔)/g, 'MES 등록'], [/엔지/g, 'NG'], [/(\d)\s*구역/g, '$1공장'], [/어퍼/g, 'UPPER'], [/로어/g, 'LOWER']],
+    vi: [[/nhà máy (\d)/gi, 'xưởng $1'], [/quá trình lắp ráp/gi, 'công đoạn lắp ráp'], [/tạp chất/gi, 'dị vật'], [/khiếm khuyết/gi, 'lỗi'], [/\bvết xước\b/gi, 'xước']],
+    en: [[/\bshoot(ing)? MES\b/gi, 'MES registration'], [/\bfactory (\d)\b/gi, 'Plant $1']]
+  };
+  function post(text, to) { (POST[to] || []).forEach(function (r) { text = text.replace(r[0], r[1]); }); return text; }
+  /* viết tắt hay gặp ở xưởng → viết rõ để máy dịch hiểu */
+  function pre(text) {
+    return String(text).replace(/(\d+)\s*H\s*\/\s*lần/gi, '$1 giờ/lần').replace(/(\d+)\s*h\s*\/\s*1\s*lần/gi, '$1 giờ/lần')
+      .replace(/\bSL\b/g, 'số lượng').replace(/\bKH\b/g, 'kế hoạch').replace(/\bTT\b/g, 'thực tế');
+  }
+  /* ngôn ngữ của một đoạn chữ */
+  function detect(text) {
+    var s = String(text || ''), h = (s.match(/[가-힣]/g) || []).length, l = (s.match(/[A-Za-zÀ-ỹ]/g) || []).length;
+    if (h && h * 2 >= l) return 'ko';
+    if (VIC.test(s)) return 'vi';
+    /* chữ không dấu: tiếng Việt gõ không dấu rất hay gặp ở xưởng */
+    if (/\b(khong|may|loi|thieu|hang|cong doan|thiet bi|dang|chua|da|bi|cua|va|nguyen nhan|xu ly|kiem tra|lech|xuoc)\b/i.test(s)) return 'vi';
+    return /[A-Za-z]{3}/.test(s) ? 'en' : 'vi';
+  }
+  /* tách cụm từ đã có sẵn dạng "VI (KO)" → không cần dịch */
+  function fetchGtx(q, from, to) {
+    var urls = ['https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=' + from + '&tl=' + to + '&q=',
+                'https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=' + from + '&tl=' + to + '&q='];
+    var i = 0;
+    function next() {
+      if (i >= urls.length) return Promise.reject(new Error('tr'));
+      var u = urls[i++], ctl = (typeof AbortController !== 'undefined') ? new AbortController() : null, tm = setTimeout(function () { if (ctl) ctl.abort(); }, 9000);
+      return fetch(u + encodeURIComponent(q), ctl ? { signal: ctl.signal } : {}).then(function (r) {
+        clearTimeout(tm); if (!r.ok) throw 0; return r.json();
+      }).then(function (j) {
+        var t = Array.isArray(j) && Array.isArray(j[0]) && Array.isArray(j[0][0]) ? j[0].map(function (x) { return x && x[0] || ''; }).join('') : (Array.isArray(j[0]) ? j[0][0] : j[0]);
+        if (typeof t !== 'string' || !t.trim()) throw 0; return t;
+      }).catch(next);
+    }
+    return next();
+  }
+  /* dịch 1 đoạn (giữ nguyên xuống dòng) */
+  function translate(text, from, to) {
+    text = String(text == null ? '' : text);
+    if (!text.trim()) return Promise.resolve(text);
+    from = from && from !== 'auto' ? from : detect(text);
+    if (from === to) return Promise.resolve(text);
+    var ex = offline(text, from, to); if (ex != null) return Promise.resolve(ex);
+    var inj = inject(pre(text), from, to);
+    return fetchGtx(inj.text, from, to).then(function (t) { return post(restore(t, to, inj.used), to).trim(); });
+  }
+  /* không có mạng: chỉ dịch được khi cả dòng là 1 thuật ngữ trong từ điển */
+  function offline(text, from, to) {
+    from = from && from !== 'auto' ? from : detect(text);
+    var s = String(text || '').trim(), fi = IDX[from], ti = IDX[to];
+    if (fi == null || ti == null) return null;
+    for (var i = 0; i < G.length; i++) {
+      var opts = G[i][fi].split('|');
+      for (var j = 0; j < opts.length; j++) if (opts[j].toLowerCase() === s.toLowerCase()) return G[i][ti].split('|')[0];
+    }
+    return null;
+  }
+  return { G: G, inject: inject, restore: restore, pre: pre, post: post, detect: detect, translate: translate, offline: offline, VERSION: 2 };
+})();
+
 /* =====================================================================
    AUTO-TRANSLATE CONTENT — keeps every free-text cell in the selected UI language
    - the stored value is never changed: the original stays in the data, only the display is translated
@@ -1603,7 +1772,7 @@ async function svDelFile(id){if(!SV.on)return;try{await svFetch("/api/db/file/"+
    - bilingual cells such as "NG CHẤT LƯỢNG…품질문제(…)" keep the part already in the chosen language
    ===================================================================== */
 Object.assign(W,{trOn:["내용 자동 번역","Tự dịch nội dung","Auto-translate content"],trOff:["원문 그대로 보기","Đang xem bản gốc","Showing originals"],
-  trBusy:["번역 중 {n}","Đang dịch {n}","Translating {n}"],trOrig:["원문: ","Bản gốc: ","Original: "],trFail:["번역 서버에 연결할 수 없어 기본 용어집으로 표시합니다","Không kết nối được máy dịch – tạm dùng từ điển nội bộ","Translation service unreachable – using the built-in glossary"],
+  trBusy:["번역 중 {n}","Đang dịch {n}","Translating {n}"],trOrig:["원문: ","Bản gốc: ","Original: "],trFail:["번역 서버에 연결할 수 없어 원문을 표시합니다 (용어집에 있는 단어만 번역)","Không kết nối được máy dịch – tạm hiện bản gốc (chỉ dịch các thuật ngữ có trong từ điển)","Translation service unreachable – showing originals (glossary terms only)"],
   trTip:["입력된 내용(원인·대책·비고 등)을 선택한 언어로 자동 표시합니다. 셀을 클릭하면 원문이 보입니다.","Tự hiển thị nội dung đã nhập (nguyên nhân, đối sách, ghi chú…) theo ngôn ngữ đã chọn. Bấm vào ô để xem / sửa bản gốc.","Shows typed content (causes, actions, notes…) in the selected language. Click a cell to see / edit the original."]});
 /* columns holding free text that should follow the UI language (codes, models, names are left alone) */
 const TRK={p:["rsn","rdt"],q:["def","act"],e:["cause","fix","pic"],s:["note"],n:["plan","x"],w:["type","cause","fix"],k:["name","prob","fix"]};
@@ -1622,13 +1791,13 @@ const TR_GLO=[["thay liệu","자재 교체","material change"],["lỗi chương
   ["hết case","케이스 소진","out of cases"],["không đủ","부족","not enough"],["chất lượng","품질","quality"],["công đoạn trước","전공정","previous process"],["công đoạn","공정","process"],["sản xuất","생산","production"],
   ["tiêu chuẩn hóa","표준화","standardize"],["quy trình","프로세스","procedure"],["do ","원인: ","due to "],["chưa ổn định","불안정","unstable"],["điều chỉnh","조정","adjust"],["độ sáng","밝기","brightness"],["đầu hút","흡착 노즐","suction nozzle"],
   ["bám dính","부착","stuck"],["kiểm tra","점검","check"],["hoàn thành","완료","completed"],["chờ ký đơn","결재 대기","awaiting approval"],["đang chuẩn bị","준비 중","preparing"],["đang test","테스트 중","testing"],["tỉ lệ","비율","rate"],["cao","높음","high"],["mất","손실","lost"],["bộ nhớ","메모리","memory"],["đầy","가득 참","full"]];
-const trSave=()=>{clearTimeout(TRQ.saveT);TRQ.saveT=setTimeout(()=>{try{localStorage.setItem("assy-tr-cache",JSON.stringify(TRC))}catch(e){}},800)};
+const trSave=()=>{clearTimeout(TRQ.saveT);TRQ.saveT=setTimeout(()=>{try{localStorage.setItem("assy-tr-cache-v2",JSON.stringify(TRC))}catch(e){}},800)};
 function trMerge(src){if(!src||typeof src!=="object")return;["ko","vi","en"].forEach(l=>{if(src[l]&&typeof src[l]==="object")Object.assign(TRC[l],src[l])})}
 function trTrim(){["ko","vi","en"].forEach(l=>{const k=Object.keys(TRC[l]);if(k.length>4000)k.slice(0,k.length-4000).forEach(x=>delete TRC[l][x])})}
 /* all-caps shop text translates badly → sentence case, keeping short codes (NG, PC, LD…) and anything with digits */
 function trPrep(s){let t=s;TR_PRE.forEach(([re,v])=>t=t.replace(re,v));
   const L=t.replace(/[^A-Za-zÀ-ỹ]/g,""),U=L.replace(/[^A-ZÀ-Ỹ]/g,"");
-  if(L.length>=6&&U.length/L.length>.8){t=t.split(/(\s+)/).map(w=>/\d/.test(w)||(w.length<=3&&!VIC.test(w))?w:w.toLowerCase()).join("");t=t.replace(/^(\W*)(\p{L})/u,(m,a,b)=>a+b.toUpperCase())}
+  if(L.length>=6&&U.length/L.length>.8){t=t.split(/(\s+)/).map(w=>/\d/.test(w)||(w.length<=3&&!VIC.test(w))||/^[A-Z]{2,}$/.test(w)?w:w.toLowerCase()).join("");t=t.replace(/^(\W*)(\p{L})/u,(m,a,b)=>a+b.toUpperCase())}
   return t}
 /* is this line already in the target language? */
 function trNeed(line,tl){if(!LETTER.test(line))return false;const h=HAN.test(line),v=VIC.test(line);
@@ -1642,8 +1811,7 @@ function trBilingual(line){const hn=(line.match(HANg)||[]).length;if(hn<3)return
   const runs=line.match(/[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7AF][\u1100-\u11FF\u3130-\u318F\uAC00-\uD7AF\s()[\]0-9.,·/\-]*/g)||[];
   if(runs.length!==1)return null;const ko=runs[0].trim(),L=line.trim();if(!(L.startsWith(ko)||L.endsWith(ko)))return null;
   return{ko,vi:rest}}
-function trGlossary(line,tl){if(tl==="vi")return line;const i=tl==="ko"?1:2;let t=line;
-  [...TR_GLO].sort((a,b)=>b[0].length-a[0].length).forEach(g=>{const re=new RegExp(g[0].replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"gi");t=t.replace(re,g[i])});return t}
+function trGlossary(line,tl){const x=window.ASSY_TR.offline(line,'auto',tl);return x!=null?x:line}
 /* one line → translated line, or undefined while waiting for the service */
 function trLine(line,tl){const lead=line.match(/^\s*/)[0],body=line.trim();if(!body)return line;
   const bi=trBilingual(body);let src=body;
@@ -1655,13 +1823,7 @@ function trLine(line,tl){const lead=line.match(/^\s*/)[0],body=line.trim();if(!b
   trQueue(tl,src);return undefined}
 function trText(o,tl){if(!o||!String(o).trim())return o;const out=[];
   for(const l of String(o).split("\n")){const r=trLine(l,tl);if(r===undefined)return null;out.push(r)}return out.join("\n")}
-async function trFetch(q,tl){
-  const tries=[["https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=auto&tl=",j=>(j[0]||[]).map(x=>x&&x[0]||"").join("")],
-               ["https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=auto&tl=",j=>Array.isArray(j[0])?j[0][0]:j[0]]];
-  for(const[u,pick]of tries){try{const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),9000);
-      const r=await fetch(u+tl+"&q="+encodeURIComponent(q),{signal:ctl.signal});clearTimeout(tm);if(!r.ok)continue;
-      const t=pick(await r.json());if(typeof t==="string"&&t.trim())return t.trim()}catch(e){}}
-  throw new Error("tr")}
+async function trFetch(q,tl){return window.ASSY_TR.translate(q,'auto',tl)}
 function trQueue(tl,src){const k=tl+"\u0001"+src;if(TRQ.pend.has(k))return;TRQ.pend.add(k);trPump();trBtnUpd()}
 function trPump(){
   while(TRQ.run<4){const k=[...TRQ.pend].find(x=>!TRQ.act.has(x));if(!k)return;TRQ.act.add(k);TRQ.run++;
@@ -1686,11 +1848,11 @@ ACT.trToggle=()=>{S.settings.autoTr=S.settings.autoTr===false;try{localStorage.s
 document.addEventListener("focusin",e=>{const el=e.target;if(el&&el.dataset&&el.dataset.tr!==undefined&&el.classList.contains("trd")){el.value=trOrig(el);el.classList.remove("trd");el.removeAttribute("title");if(el.tagName==="TEXTAREA")fitTA(el)}},true);
 document.addEventListener("focusout",e=>{const el=e.target;if(el&&el.dataset&&el.dataset.tr!==undefined)setTimeout(trApply,0)},true);
 /* hook into the existing render / calc / persist cycle */
-function trAbsorb(){if(S&&S.trc&&S.trc!==TRC)trMerge(S.trc);if(S)S.trc=TRC}
+function trAbsorb(){if(S&&S.trc2&&S.trc2!==TRC)trMerge(S.trc2);if(S){S.trc2=TRC;delete S.trc}}
 {const r0=render;render=function(){trAbsorb();r0();trApply()};
  const c0=calc;calc=function(){c0();trApply()};
- const p0=persist;persist=function(){trTrim();if(S)S.trc=TRC;p0()};}
-try{trMerge(JSON.parse(localStorage.getItem("assy-tr-cache")||"null"))}catch(e){}
+ const p0=persist;persist=function(){trTrim();if(S){S.trc2=TRC;delete S.trc}p0()};}
+try{try{localStorage.removeItem("assy-tr-cache")}catch(e){}trMerge(JSON.parse(localStorage.getItem("assy-tr-cache-v2")||"null"))}catch(e){}
 
 /* sections with long content: vertical scroll inside each section, header + total stay visible */
 function scMark(){document.querySelectorAll("#app section.card .sc").forEach(sc=>{sc.classList.toggle("more",sc.scrollHeight-sc.clientHeight-sc.scrollTop>4);if(!sc._scb){sc._scb=1;sc.addEventListener("scroll",()=>sc.classList.toggle("more",sc.scrollHeight-sc.clientHeight-sc.scrollTop>4),{passive:true})}})}
