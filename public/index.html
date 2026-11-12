@@ -561,6 +561,12 @@ async function actDelDay(){if(!await confirmBox(T("delDayQ",{d:fmtDayLong(S.cur)
 async function actDelMonth(){const m=monthOf(S.cur),list=daysOf(m);if(!await confirmBox(T("delMonthQ",{m:fmtMonth(m),n:list.length}),T("del"),true))return;await snapshot("v_del");await removeDays(list);persist();render();toast(T("deleted"))}
 async function renameDay(nd){const od=S.cur;if(!/^\d{4}-\d{2}-\d{2}$/.test(nd)||nd===od){render();return}
   if(S.days[nd]){if(await confirmBox(T("dayExists",{d:fmtDayLong(nd)}),T("go")))goDay(nd);else render();return}
+  {const L=lang==="ko"?0:lang==="vi"?1:2,tx=a=>a[L],a=fmtDayLong(od),b=fmtDayLong(nd);
+   const q=await modal({title:tx(["보고일자 변경","Đổi ngày báo cáo","Change report date"]),width:520,
+     body:`<div class="note" style="margin:0 0 6px;font-size:14px;line-height:1.6">${esc(tx([`현재 보고서는 ${a} 입니다.`,`Báo cáo đang mở là ngày ${a}.`,`The open report is ${a}.`]))}<br><b>${esc(tx([`${b} 보고서를 새로 만들까요?`,`Bạn muốn TẠO BÁO CÁO MỚI cho ngày ${b}?`,`Create a NEW report for ${b}?`]))}</b><br><span style="color:#c0392b">${esc(tx([`「날짜만 변경」을 누르면 ${a} 보고서가 ${b}(으)로 옮겨지고 ${a}는 사라집니다.`,`Nếu chọn "Chỉ đổi ngày", toàn bộ báo cáo ${a} sẽ chuyển sang ${b} và ngày ${a} sẽ KHÔNG CÒN.`,`"Only change date" moves the whole ${a} report to ${b}; ${a} will no longer exist.`]))}</span></div>`,
+     actions:[{v:"no",label:T("cancel")},{v:"mv",label:tx(["날짜만 변경","Chỉ đổi ngày","Only change date"])},{v:"new",label:tx(["새 보고서 만들기","Tạo báo cáo mới","Create new report"]),cls:"pri"}]});
+   if(q.v==="new"){S.days[nd]=makeDay(nd,"template");S.cur=nd;tab="r";persist();render();toast(T("created",{d:b}),"ok");return}
+   if(q.v!=="mv"){render();return}}
   S.days[nd]=S.days[od];delete S.days[od];if(S.pdfs[od]){S.pdfs[nd]=S.pdfs[od];delete S.pdfs[od]}if(S.photos[od]){S.photos[nd]=S.photos[od];delete S.photos[od]}S.cur=nd;persist();render();toast(T("renamed",{d:fmtDayLong(nd)}),"ok")}
 
 /* =====================================================================
@@ -1729,6 +1735,13 @@ async function actSavePng(){
   }catch(e){console.error(e);toast(T("pngFail"),"err")}
   finally{document.body.classList.remove("capturing");trApply()}}
 
+/* mở trang: luôn hiện NGÀY HÔM NAY (nếu đã có); chưa có thì hiện ngày gần nhất và nhắc tạo ngày mới.
+   Tránh việc máy khác vẫn đứng ở ngày cũ (vd 10/11) rồi nhập số liệu 11/11 vào nhầm ngày. */
+function openToday(notify){const t=ymd(new Date());openToday.last=t;
+  if(S.days[t]){if(S.cur!==t){S.cur=t;tab="r";render()}return}
+  const prev=dates().filter(d=>d<t),last=prev[prev.length-1];
+  if(last&&S.cur!==last){S.cur=last;tab="r";render()}
+  if(notify&&last){const d=fmtDayLong(t),msg=lang==="ko"?`오늘(${d}) 보고서가 아직 없습니다 — [새 날짜 입력]을 눌러 주세요`:lang==="vi"?`Chưa có báo cáo hôm nay (${d}) — bấm "Nhập ngày mới" trước khi nhập số liệu`:`No report for today (${d}) yet — click "New day" first`;toast(msg,"err")}}
 (async function init(){
   await DB.open();
   const cands=[];
@@ -1746,6 +1759,9 @@ async function actSavePng(){
   render();
   if(sv){await svStart(sv);
     setInterval(svPoll,2000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)svPoll()})}
+  openToday(true);
+  setInterval(()=>{if(ymd(new Date())!==openToday.last)openToday(true)},60000);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden&&ymd(new Date())!==openToday.last)openToday(true)});
   render();await resumeAutoHtml();
 })();
 </script></body></html>
