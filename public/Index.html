@@ -445,11 +445,11 @@ const GC=k=>`<td class="g c" data-c="${k}"></td>`;
 const aN=D=>Math.max(1,+D.a_n||1),mN=D=>Math.max(1,+D.m_n||2),aPl=(D,g)=>D[`a_${g}_plant`]||(g===1?"NOTE PC":"X1"),aCa=(D,g)=>D[`a_${g}_ca`]||"day",mDp=(D,g)=>D[`m_${g}_dept`]||(g===1?"X4":"X1");
 const delB=(t,g,n)=>n>1?`<button class="x" data-act="amDel" data-t="${t}" data-g="${g}" title="${T("delRow")}">×</button>`:"";
 function amHTML(D){
-  const th=l=>`<th>${T(l)}</th>`,NT=k=>`<td class="y"><input data-top="${k}" value="${esc(D[k])}"></td>`;
+  const th=l=>`<th>${T(l)}</th>`,NT=k=>`<td class="y"><input data-top="${k}" value="${esc(D[k])}" title="${esc(D[k])}"></td>`;
   const cg=w=>`<colgroup>${w.map(x=>`<col style="width:${x}%">`).join("")}</colgroup>`;
   const sel=(k,o,cur)=>`<select data-top="${k}">${o.map(([v,l])=>`<option value="${esc(v)}"${v===cur?" selected":""}>${esc(l)}</option>`).join("")}</select>`;
   const an=aN(D),mn=mN(D);
-  let a=`<section class="card"><h2><span class="no">${SN.am}</span>${T("sAM")}</h2><div class="amw"><div><h3 class="amh">${T("sA")}</h3><div class="sc"><table style="table-layout:fixed">${cg([11,9,12,11,11,11,12,9,14])}<tr>${th("aShop")}${th("aCa")}${th("aItem")}${th("aTot")}${th("aWork")}${th("aLeave")}${th("aAbs")}${th("aRate")}${th("remark")}</tr>`;
+  let a=`<section class="card"><h2><span class="no">${SN.am}</span>${T("sAM")}</h2><div class="amw"><div><h3 class="amh">${T("sA")}</h3><div class="sc"><table style="table-layout:fixed">${cg([8,8,9,7.5,7.5,7.5,8.5,6,38])}<tr>${th("aShop")}${th("aCa")}${th("aItem")}${th("aTot")}${th("aWork")}${th("aLeave")}${th("aAbs")}${th("aRate")}${th("remark")}</tr>`;
   for(let g=0;g<an;g++){
     ["aReg","aOut","aX4"].forEach((l,i)=>{a+=`<tr>${i?"":`<td rowspan="4" class="y">${sel(`a_${g}_plant`,[["X1","X1"],["NOTE PC","NOTE PC"]],aPl(D,g))}</td><td rowspan="3" class="y">${sel(`a_${g}_ca`,[["day",T("aDay")],["night",T("aNight")]],aCa(D,g))}</td>`}<td>${T(l)}</td>${["tot","work","leave","abs"].map(c=>NI(D,`a_${g}_${i}_${c}`)).join("")}${GC(`a:${g}:${i}:rate`)}${NT(`a_${g}_${i}_note`)}</tr>`});
     a+=`<tr><td colspan="2" class="g c" data-c="a:${g}:lbl"></td>${["tot","work","leave","abs","rate"].map(c=>GC(`a:${g}:t:${c}`)).join("")}<td class="g c">${delB("a",g,an)}</td></tr>`}
